@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="tr" style="--text-muted: #000000; --text-main: #000000; --icon-color: #0b2941; --card-border-radius: 10px; --card-border-width: 1px;"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OYAK HORSE | HSE DASHBOARD</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --card-border-width: 1px;
+            --card-border-radius: 10px;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --vurgu-color: #004279;
+            --icon-color: #004279;
+            --accent-green: #059669;
+            --accent-yellow: #d97706;
+            --accent-red: #dc2626;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 16px 32px;
+            color: var(--text-main);
+            transition: background-color 0.2s ease, color 0.2s ease;
+            height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        [contenteditable="true"]:hover, [contenteditable="true"]:focus {
+            background-color: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            cursor: text;
+            outline: 1px dashed var(--vurgu-color);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .brand-logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
+            outline: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header .date {
+            font-size: 13px;
+            color: var(--vurgu-color);
+            font-weight: 700;
+            background: #e0e7ff;
+            padding: 6px 14px;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        #settingsBtn {
+            font-size: 18px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        #settingsBtn:hover {
+            color: var(--vurgu-color);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            flex-grow: 1;
+            min-height: 0;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: var(--card-border-width) solid var(--border-color);
+            border-radius: var(--card-border-radius);
+            padding: 16px 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            transition: border-width 0.1s, outline 0.1s;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .col-2 { grid-column: span 2; }
+        .col-3 { grid-column: span 3; }
+        .col-4 { grid-column: span 4; }
+        .col-5 { grid-column: span 5; }
+        .col-6 { grid-column: span 6; }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            pointer-events: none;
+            flex-shrink: 0;
+            justify-content: space-between;
+        }
+
+        .card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            color: var(--icon-color);
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 24px;
+            transition: color 0.2s;
+        }
+
+        .card-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            outline: none;
+            pointer-events: auto;
+            line-height: 1.2;
+        }
+        
+        .card-subtitle-hint {
+            font-size: 9px;
+            color: var(--text-muted);
+            font-weight: 500;
+            opacity: 0.7;
+        }
+
+        .card-content-area {
+            pointer-events: none;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 0;
+            position: relative;
+        }
+
+        .metric-large {
+            font-size: 38px;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1;
+            letter-spacing: -1px;
+            display: inline-block;
+            outline: none;
+            pointer-events: auto;
+        }
+
+        .metric-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 500;
+            outline: none;
+            pointer-events: auto;
+        }
+
+        .metric-highlight { color: var(--accent-green) !important; }
+        .metric-vurgu { color: var(--vurgu-color) !important; }
+
+        .dws-status {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-top: 6px;
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .dws-status span {
+            outline: none;
+            pointer-events: auto;
+        }
+
+        .dws-status-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-right: 6px;
+        }
+        
+        .dws-separator {
+            color: var(--border-color); 
+            font-weight: 400; 
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .progress-bar-bg {
+            background-color: var(--border-color);
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background-color: var(--accent-green);
+            transition: width 0.4s ease, background-color 0.2s ease;
+        }
+
+        .vertical-bar-wrapper-container {
+            position: relative;
+            height: 100px;
+            display: flex;
+            align-items: flex-end;
+            width: 24px;
+            margin-right: 25px;
+        }
+        .vertical-bar-target-group {
+            position: absolute;
+            bottom: 90%;
+            left: -67px; 
+            width: 85px;
+            display: flex;
+            align-items: center;
+            z-index: 2;
+            transform: translateY(50%);
+        }
+        .vertical-bar-target-text {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-right: 2px;
+            background: transparent;
+            padding-right: 4px;
+        }
+        .vertical-bar-target-line {
+            flex-grow: 1;
+            border-bottom: 2px dashed var(--text-main);
+        }
+        .vertical-bar-container {
+            width: 100%;
+            height: 100%;
+            background-color: var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+        }
+        .vertical-bar-fill {
+            width: 100%;
+            background-color: var(--accent-green);
+            border-radius: 6px;
+            transition: height 0.4s ease, background-color 0.2s ease;
+        }
+
+        .chart-wrapper-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 100%;
+            max-height: 110px;
+            width: 110px;
+            pointer-events: auto;
+            flex-shrink: 0;
+        }
+        
+        .chart-container-large {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            min-height: 0;
+            pointer-events: auto;
+            margin-top: 8px;
+        }
+
+        table {
+            width: 100%;
+            height: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            pointer-events: auto;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 4px 8px;
+            border-bottom: 1px solid var(--border-color);
+            outline: none;
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        td { font-weight: 600; color: var(--text-main); }
+        td:last-child, th:last-child { text-align: right; }
+
+        .dojo-metrics {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            background-color: rgba(0,0,0,0.02);
+            border-radius: 6px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .dojo-item {
+            text-align: center;
+        }
+
+        .dojo-divider {
+            width: 1px;
+            height: 40px;
+            background-color: var(--border-color);
+        }
+
+        .accident-inputs {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 8px;
+            pointer-events: auto;
+            flex-shrink: 0;
+        }
+
+        .accident-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: rgba(0,0,0,0.02);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            flex-grow: 1;
+        }
+
+        .accident-badge span {
+            color: var(--text-main);
+            font-weight: 800;
+            min-width: 16px;
+            text-align: center;
+            outline: none;
+        }
+
+        #colorTool {
+            display: none;
+            position: fixed;
+            top: 60px;
+            right: 32px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            width: 300px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .tool-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--vurgu-color);
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tool-section-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin: 16px 0 10px 0;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tool-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .tool-item-label {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+
+        input[type="color"] {
+            border: 1px solid #cbd5e1;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            padding: 0;
+            background: none;
+            flex-shrink: 0;
+        }
+
+        input[type="number"], .floating-input {
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 12px;
+            outline: none;
+        }
+
+        input[type="number"] {
+            width: 48px;
+            padding: 4px;
+        }
+
+        .floating-input {
+            position: absolute;
+            width: 40px;
+            padding: 2px;
+            display: none;
+            z-index: 50;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .reset-btn {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: var(--text-main);
+            padding: 6px 12px;
+            font-size: 11px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 12px;
+            width: 100%;
+        }
+        
+        .reset-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .save-btn {
+            background: var(--accent-green);
+            border: none;
+            color: #ffffff;
+            padding: 8px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            margin-top: 12px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .save-btn:hover {
+            background: #047857;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <div class="brand-logo" contenteditable="true">OYAK HORSE | HSE</div>
+        </div>
+        <div class="header-right">
+            <i class="fas fa-cog" id="settingsBtn"></i>
+            <div class="date" contenteditable="true">31 MART 2026</div>
+        </div>
+    </div>
+
+    <div id="colorTool" style="display: none;">
+        <div class="tool-header">
+            DASHBOARD AYARLARI
+            <i class="fas fa-times" id="closeTool" style="cursor:pointer; color: var(--text-muted);"></i>
+        </div>
+        <div class="tool-section-title">GENEL AYARLAR</div>
+        <div class="tool-item"><span class="tool-item-label">Sayfa Arka Planı:</span> <input type="color" id="bgColorPicker" value="#f1f5f9"></div>
+        <div class="tool-item"><span class="tool-item-label">Genel Ana Metin Rengi:</span> <input type="color" id="textMainPicker" value="#000000"></div>
+        <div class="tool-item"><span class="tool-item-label">Genel Silik Metin Rengi:</span> <input type="color" id="textMutedGlobalPicker" value="#000000"></div>
+        <div class="tool-item"><span class="tool-item-label">Tema/Vurgu Rengi:</span> <input type="color" id="accentColorPicker" value="#004279"></div>
+        
+        <div class="tool-section-title">
+            KART AYARLARI 
+            <span id="selectedCardLabel" style="color: var(--vurgu-color); text-transform: none; font-weight: 600; margin-left: auto;">Tümü</span>
+        </div>
+        <div class="tool-item"><span class="tool-item-label">Kart Arka Planı:</span> <input type="color" id="cardBgPicker" value="#ffffff"></div>
+        <div class="tool-item"><span class="tool-item-label">Kart Ana Metin Rengi:</span> <input type="color" id="cardTextMainPicker" value="#0f172a"></div>
+        <div class="tool-item"><span class="tool-item-label">Kart Silik Metin Rengi:</span> <input type="color" id="cardTextMutedPicker" value="#64748b"></div>
+        <div class="tool-item"><span class="tool-item-label">İkon Rengi:</span> <input type="color" id="iconColorPicker" value="#0b2941"></div>
+        <div class="tool-item"><span class="tool-item-label">Kenarlık Rengi:</span> <input type="color" id="borderColorPicker" value="#e2e8f0"></div>
+        <div class="tool-item"><span class="tool-item-label">Kenarlık Kalınlığı (px):</span> <input type="number" id="borderWidthPicker" value="1" min="0" max="15"></div>
+        <div class="tool-item"><span class="tool-item-label">Kenarlık Ovalliği (px):</span> <input type="number" id="borderRadiusPicker" value="10" min="0" max="50"></div>
+        
+        <div>
+            <button class="reset-btn" id="resetSelectionBtn">Seçimi Temizle</button>
+            <button class="save-btn" id="saveBtn"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button>
+        </div>
+    </div>
+
+    <div class="grid-container">
+        
+        <div class="card col-4" id="card_kaza" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div class="card-title" contenteditable="true">KATEGORİSEL İŞ KAZALARI</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <div class="accident-inputs">
+                    <div class="accident-badge">FR0: <span id="valFR0" contenteditable="true">1</span></div>
+                    <div class="accident-badge">FR1: <span id="valFR1" contenteditable="true">1</span></div>
+                    <div class="accident-badge">FR2: <span id="valFR2" contenteditable="true">0</span></div>
+                    <div class="accident-badge">RK: <span id="valRK" contenteditable="true">0</span></div>
+                </div>
+                <div class="chart-container-large"><canvas id="kazaKategoriChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="card col-4" id="card_ltcr" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
+                    <div class="card-title" contenteditable="true">LTCR</div>
+                </div>
+                <div class="card-subtitle-hint"></div>
+            </div>
+            <div class="card-content-area" id="ltcrContainer">
+                <input type="text" id="floatingInput" class="floating-input" value="">
+                <div class="chart-container-large" style="margin-top: 0;">
+                    <canvas id="ltcrChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card col-4" id="card_fr2" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-chart-area"></i></div>
+                    <div class="card-title" contenteditable="true">FR2</div>
+                </div>
+            </div>
+            <div class="card-content-area" id="fr2Container">
+                <div class="chart-container-large" style="margin-top: 0;">
+                    <canvas id="fr2Chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card col-3" id="card_posta" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                    <div class="card-title" contenteditable="true">POSTA RİSK DEĞERLENDİRME</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <table style="width: 70%; margin: 0 auto;">
+                    <tbody><tr><th>Departman</th><th>İlerleme</th></tr>
+                    <tr><td contenteditable="true">VK</td><td contenteditable="true">93%</td></tr>
+                    <tr><td contenteditable="true">Motor</td><td contenteditable="true">100%</td></tr>
+                    <tr><td contenteditable="true">Döküm</td><td contenteditable="true">100%</td></tr>
+                    <tr><td contenteditable="true">Lojistik</td><td contenteditable="true">100%</td></tr>
+                </tbody></table>
+            </div>
+        </div>
+
+        <div class="card col-3" id="card_ca" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-list-check"></i></div>
+                    <div class="card-title" contenteditable="true">CA HAFTALIK ANİMASYON TAKİBİ</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <table style="width: 80%; margin: 0 auto;">
+                    <tbody><tr><th>Atölye</th><th>Atölye Sayısı</th><th>Devreye Alan</th></tr>
+                    <tr><td contenteditable="true">VK</td><td contenteditable="true">2</td><td contenteditable="true">1</td></tr>
+                    <tr><td contenteditable="true">Motor</td><td contenteditable="true">3</td><td contenteditable="true">2</td></tr>
+                    <tr><td contenteditable="true">Döküm</td><td contenteditable="true">2</td><td contenteditable="true">2</td></tr>
+                    <tr><td contenteditable="true">Lojistik</td><td contenteditable="true">1</td><td contenteditable="true">1</td></tr>
+                </tbody></table>
+            </div>
+        </div>
+
+        <div class="card col-2" id="card_loto" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-qrcode"></i></div>
+                    <div class="card-title" contenteditable="true">LOTO FOS QR</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <table style="width: 100%; margin: 0 auto; font-size: 11px;">
+                    <tbody>
+                        <tr><th>Dep.</th><th style="text-align: center;">Hat</th><th style="text-align: right;">Oran</th></tr>
+                        <tr><td contenteditable="true">Döküm</td><td contenteditable="true" style="text-align: center;">1/1</td><td contenteditable="true" style="text-align: right;">100%</td></tr>
+                        <tr><td contenteditable="true">Motor</td><td contenteditable="true" style="text-align: center;">3/5</td><td contenteditable="true" style="text-align: right;">60%</td></tr>
+                        <tr><td contenteditable="true">VK</td><td contenteditable="true" style="text-align: center;">3/5</td><td contenteditable="true" style="text-align: right;">60%</td></tr>
+                        <tr><td contenteditable="true">Loj.</td><td contenteditable="true" style="text-align: center;">1/1</td><td contenteditable="true" style="text-align: right;">100%</td></tr>
+                        <tr><td contenteditable="true">Bakım</td><td contenteditable="true" style="text-align: center;">0/1</td><td contenteditable="true" style="text-align: right;">0%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card col-2" id="card_dws" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-bars-progress"></i></div>
+                    <div class="card-title" contenteditable="true" style="font-size: 12.5px;">HAT BAZINDA DWS</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <div style="width: 100%; margin: 0 auto; padding-left: 8px;">
+                    <div class="metric-large" id="dwsScore" contenteditable="true" style="font-size: 35px;">85%</div>
+                    <div class="dws-status" style="font-size: 15px; flex-wrap: wrap; gap: 4px;">
+                        <span contenteditable="true">12</span> <span class="dws-status-label" style="font-size: 11px;">OK</span>
+                        <span class="dws-separator" style="margin: 0 2px;">|</span>
+                        <span contenteditable="true">2</span> <span class="dws-status-label" style="font-size: 11px;">DEVAM</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div id="dwsBar" class="progress-bar-fill" style="width: 85%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card col-2" id="card_hstool" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+                    <div class="card-title" contenteditable="true" style="font-size: 10px;">HS KRİTERLERİ</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <div class="dojo-metrics" style="padding: 8px; flex-direction: column; align-items: flex-start; gap: 8px; background: none; border: none;">
+                    <div class="dojo-item" style="text-align: left; width: 100%;">
+                        <div class="metric-large" id="hsToolScore" contenteditable="true" style="font-size: 24px;">1.65</div>
+                        <div class="metric-sub" contenteditable="true" style="margin-top: 0px;">Skor</div>
+                    </div>
+                    <div class="dojo-divider" style="height: 1px; width: 100%;"></div>
+                    <div class="dojo-item" style="text-align: left; width: 100%;">
+                        <div class="metric-large" id="hsYayginlasma" contenteditable="true" style="font-size: 24px;">65%</div>
+                        <div class="metric-sub" contenteditable="true" style="margin-top: 0px;">Hedef: %85</div>
+                        <div class="progress-bar-bg" style="margin-top: 4px; height: 5px;">
+                            <div id="hsYayginlasmaBar" class="progress-bar-fill" style="width: 65%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card col-3" id="card_santiye" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-helmet-safety"></i></div>
+                    <div class="card-title" contenteditable="true" style="font-size: 13px;">AKTİF ŞANTİYE SAYISI & HS CHECK</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <div class="dojo-metrics" style="padding: 0; background: none; border: none;">
+                    <div class="dojo-item">
+                        <div class="metric-large" contenteditable="true" style="font-size: 42px;">1</div>
+                        <div class="metric-sub" contenteditable="true" style="font-size: 13px;">Açık Şantiye</div>
+                    </div>
+                    <div class="dojo-divider"></div>
+                    <div class="dojo-item">
+                        <div class="metric-large" contenteditable="true" style="font-size: 42px;">12</div>
+                        <div class="metric-sub" contenteditable="true" style="font-size: 13px;">HS Check</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card col-3" id="card_yasal" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-file-shield"></i></div>
+                    <div class="card-title" contenteditable="true" style="font-size: 13px;">YASAL İŞ GÜVENLİĞi eğitimi</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <div class="chart-wrapper-row">
+                    <div style="pointer-events: auto;">
+                        <div class="metric-large" id="yasalScore" contenteditable="true" style="font-size: 42px;">91%</div>
+                        <div class="metric-sub" contenteditable="true" style="font-size: 13px;">Tamamlanma Oranı</div>
+                    </div>
+                    <div class="chart-container"><canvas id="yasalEgitimChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card col-3" id="card_dojo" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-person-chalkboard"></i></div>
+                    <div class="card-title" contenteditable="true" style="font-size: 13px;">RİSK FARKINDALIĞI semineri</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <div class="dojo-metrics">
+                    <div class="dojo-item">
+                        <div class="metric-large" contenteditable="true" style="font-size: 42px;">2</div>
+                        <div class="metric-sub" contenteditable="true" style="font-size: 13px;">Seans Yapıldı</div>
+                    </div>
+                    <div class="dojo-divider"></div>
+                    <div class="dojo-item">
+                        <div class="metric-large" contenteditable="true" style="font-size: 42px;">45</div>
+                        <div class="metric-sub" contenteditable="true" style="font-size: 13px;">Kişiye Verildi</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card col-3" id="card_intenseye" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-camera-retro"></i></div>
+                    <div class="card-title" contenteditable="true" style="font-size: 13px;">INTENSEYE GÜVENLİK PUANI</div>
+                </div>
+            </div>
+            <div class="card-content-area" style="flex-direction: row; justify-content: space-between; align-items: center;">
+                <div>
+                    <div class="metric-large" id="intenseyeScore" contenteditable="true" style="font-size: 42px;">90%</div>
+                    <div class="metric-sub" contenteditable="true" style="font-size: 13px;">+%1 vs Önceki ay</div>
+                </div>
+                <div class="vertical-bar-wrapper-container">
+                    <div class="vertical-bar-target-group">
+                        <span class="vertical-bar-target-text" style="font-size: 12px;" contenteditable="true">Hedef %90</span>
+                        <div class="vertical-bar-target-line"></div>
+                    </div>
+                    <div class="vertical-bar-container">
+                        <div id="intenseyeBar" class="vertical-bar-fill" style="height: 90%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const settingsBtn = document.getElementById('settingsBtn');
+        const colorTool = document.getElementById('colorTool');
+        const closeTool = document.getElementById('closeTool');
+        const root = document.querySelector(':root');
+
+        const cards = document.querySelectorAll('.card');
+        const selectedCardLabel = document.getElementById('selectedCardLabel');
+        const resetSelectionBtn = document.getElementById('resetSelectionBtn');
+        const saveBtn = document.getElementById('saveBtn');
+
+        const bgColorPicker = document.getElementById('bgColorPicker');
+        const textMainPicker = document.getElementById('textMainPicker');
+        const textMutedGlobalPicker = document.getElementById('textMutedGlobalPicker');
+        const accentColorPicker = document.getElementById('accentColorPicker');
+
+        const cardBgPicker = document.getElementById('cardBgPicker');
+        const cardTextMainPicker = document.getElementById('cardTextMainPicker');
+        const cardTextMutedPicker = document.getElementById('cardTextMutedPicker');
+        const iconColorPicker = document.getElementById('iconColorPicker');
+        const borderColorPicker = document.getElementById('borderColorPicker');
+        const borderWidthPicker = document.getElementById('borderWidthPicker');
+        const borderRadiusPicker = document.getElementById('borderRadiusPicker');
+
+        let selectedCard = null;
+        let fileHandle = null;
+
+        const selectorsMainText = '.metric-large, td, .dws-status > span, .accident-badge > span';
+        const selectorsMutedText = '.card-title, .metric-sub, th, .dws-status-label';
+
+        Chart.defaults.font.family = "'Poppins', sans-serif";
+        Chart.defaults.color = getComputedStyle(root).getPropertyValue('--text-muted').trim();
+
+        const customDataLabels = {
+            id: 'customDataLabels',
+            afterDatasetsDraw(chart, args, pluginOptions) {
+                const { ctx, data } = chart;
+                ctx.save();
+                ctx.font = 'bold 10px Poppins';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                
+                data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    if (!meta.hidden && dataset.label !== 'Target') {
+                        meta.data.forEach((element, index) => {
+                            const value = dataset.data[index];
+                            if (value !== null && value !== undefined && !isNaN(value)) {
+                                ctx.fillStyle = getComputedStyle(root).getPropertyValue('--text-main').trim();
+                                ctx.fillText(value.toString().replace('.', ','), element.x, element.y - 6);
+                            }
+                        });
+                    }
+                });
+                ctx.restore();
+            }
+        };
+
+        Chart.register(customDataLabels);
+
+        const doughnutOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: { legend: { display: false }, tooltip: { enabled: false }, customDataLabels: false },
+            animation: { duration: 0 },
+            layout: { padding: 0 }
+        };
+
+        let yasalChart = new Chart(document.getElementById('yasalEgitimChart'), { type: 'doughnut', data: { datasets: [{ data: [94, 6], backgroundColor: ['#059669', '#f1f5f9'], borderWidth: 0 }] }, options: doughnutOptions });
+
+        let kazaChart = new Chart(document.getElementById('kazaKategoriChart'), {
+            type: 'bar',
+            data: {
+                labels: ['FR0', 'FR1', 'FR2', 'RK'],
+                datasets: [{
+                    data: [0, 1, 0, 0],
+                    backgroundColor: [getComputedStyle(root).getPropertyValue('--vurgu-color').trim(), '#d97706', '#dc2626', '#2563eb'],
+                    borderRadius: 4,
+                    borderWidth: 0,
+                    barThickness: 24
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false }, customDataLabels: false },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { color: Chart.defaults.color, stepSize: 1 } },
+                    x: { grid: { display: false }, border: { display: false }, ticks: { font: { weight: 'bold' }, color: Chart.defaults.color } }
+                },
+                animation: { duration: 0 }
+            }
+        });
+
+        let ltcrChart = new Chart(document.getElementById('ltcrChart'), {
+            type: 'line',
+            data: {
+                labels: ['2025', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Realisation',
+                        data: [0.5, 0, 0, null, null, null, null, null, null, null, null, null, null],
+                        backgroundColor: '#f97316',
+                        barPercentage: 0.5
+                    },
+                    {
+                        type: 'line',
+                        label: 'Commitment',
+                        data: [null, 7.14, 3.33, 2.25, 1.67, 1.33, 1.11, 0.95, 0.84, 0.73, 0.65, 0.58, 0.53],
+                        borderColor: '#65a30d',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        pointRadius: 0
+                    },
+                    {
+                        type: 'line',
+                        label: 'Target',
+                        data: [0.5, 6.5, 3.0, 2.1, 1.5, 1.2, 1.0, 0.9, 0.8, 0.7, 0.6, 0.55, 0.53],
+                        borderColor: '#1e3a8a',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { top: 5, right: 10, left: 10, bottom: 0 } },
+                plugins: { 
+                    legend: { 
+                        display: true, 
+                        position: 'top', 
+                        align: 'end',
+                        labels: {
+                            boxWidth: 8,
+                            boxHeight: 8,
+                            useBorderRadius: true,
+                            borderRadius: 2,
+                            font: { size: 9 }
+                        }
+                    }, 
+                    tooltip: { enabled: false } 
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { color: Chart.defaults.color, font: {size: 9} }, max: 8 },
+                    x: { grid: { display: false }, border: { display: false }, ticks: { color: Chart.defaults.color, font: {size: 8}, maxRotation: 45, minRotation: 45 } }
+                },
+                animation: { duration: 0 }
+            }
+        });
+
+        let fr2Chart = new Chart(document.getElementById('fr2Chart'), {
+            type: 'line',
+            data: {
+                labels: ['2023', '2024', '2025', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Realisation',
+                        data: [0.96, 0.83, null, 0, 0, 0, null, null, null, null, null, null, null, null, null],
+                        backgroundColor: '#f97316',
+                        barPercentage: 0.5
+                    },
+                    {
+                        type: 'line',
+                        label: 'Commitment',
+                        data: [0.52, 0.52, 1.03, null, null, null, null, null, null, 1.02, 1.05, 1.01, 1.00, 0.98, 0.97],
+                        borderColor: '#fbbf24',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        pointRadius: 0
+                    },
+                    {
+                        type: 'line',
+                        label: 'Target',
+                        data: [0, 0, 1.03, 0, 0, 0, 0, 0, 0, 1.02, 1.05, 1.01, 1.00, 0.98, 0.97],
+                        borderColor: '#78350f',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { top: 5, right: 10, left: 10, bottom: 0 } },
+                plugins: { 
+                    legend: { 
+                        display: true, 
+                        position: 'top', 
+                        align: 'end',
+                        labels: {
+                            boxWidth: 8,
+                            boxHeight: 8,
+                            useBorderRadius: true,
+                            borderRadius: 2,
+                            font: { size: 9 }
+                        }
+                    }, 
+                    tooltip: { enabled: false } 
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { color: Chart.defaults.color, font: {size: 9} }, max: 1.5 },
+                    x: { grid: { display: false }, border: { display: false }, ticks: { color: Chart.defaults.color, font: {size: 8}, maxRotation: 45, minRotation: 45 } }
+                },
+                animation: { duration: 0 }
+            }
+        });
+
+        const floatInput = document.getElementById('floatingInput');
+        let editDatasetIndex = -1;
+        let editDataIndex = -1;
+
+        document.getElementById('ltcrChart').addEventListener('click', function(evt) {
+            const points = ltcrChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+            if (points.length) {
+                const point = points[0];
+                editDatasetIndex = point.datasetIndex;
+                editDataIndex = point.index;
+                const value = ltcrChart.data.datasets[editDatasetIndex].data[editDataIndex];
+                
+                const canvasRect = this.getBoundingClientRect();
+                const containerRect = document.getElementById('ltcrContainer').getBoundingClientRect();
+                
+                const relativeX = canvasRect.left - containerRect.left + point.element.x;
+                const relativeY = canvasRect.top - containerRect.top + point.element.y;
+
+                floatInput.style.display = 'block';
+                floatInput.style.left = (relativeX - 22) + 'px';
+                floatInput.style.top = (relativeY - 26) + 'px';
+                floatInput.value = (value !== null && value !== undefined) ? value : '';
+                floatInput.focus();
+            }
+        });
+
+        function updateChartPoint() {
+            if (editDatasetIndex !== -1 && editDataIndex !== -1) {
+                let rawVal = floatInput.value.replace(',', '.');
+                let val = parseFloat(rawVal);
+                ltcrChart.data.datasets[editDatasetIndex].data[editDataIndex] = isNaN(val) ? null : val;
+                ltcrChart.update();
+            }
+            floatInput.style.display = 'none';
+        }
+
+        floatInput.addEventListener('blur', updateChartPoint);
+        floatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') updateChartPoint();
+        });
+
+        function updateProgressBar(textId, barId, maxVal = 100) {
+            let val = parseFloat(document.getElementById(textId).innerText.replace('%', '').replace(',', '.')) || 0;
+            if (val > maxVal) val = maxVal;
+            if (val < 0) val = 0;
+            let percentage = (val / maxVal) * 100;
+            document.getElementById(barId).style.width = percentage + '%';
+        }
+        
+        function updateVerticalProgressBar(textId, barId, maxVal = 100) {
+            let val = parseFloat(document.getElementById(textId).innerText.replace('%', '').replace(',', '.')) || 0;
+            if (val > maxVal) val = maxVal;
+            if (val < 0) val = 0;
+            let percentage = (val / maxVal) * 100;
+            document.getElementById(barId).style.height = percentage + '%';
+        }
+
+        function updateDoughnutChart(textId, chartInstance) {
+            let val = parseFloat(document.getElementById(textId).innerText.replace('%', '').replace(',', '.')) || 0;
+            if (val > 100) val = 100;
+            if (val < 0) val = 0;
+            chartInstance.data.datasets[0].data = [val, 100 - val];
+            chartInstance.update();
+        }
+
+        function updateBarChart() {
+            let fr0 = parseFloat(document.getElementById('valFR0').innerText) || 0;
+            let fr1 = parseFloat(document.getElementById('valFR1').innerText) || 0;
+            let fr2 = parseFloat(document.getElementById('valFR2').innerText) || 0;
+            let rk = parseFloat(document.getElementById('valRK').innerText) || 0;
+            kazaChart.data.datasets[0].data = [fr0, fr1, fr2, rk];
+            kazaChart.update();
+        }
+
+        document.getElementById('hsYayginlasma').addEventListener('input', () => updateProgressBar('hsYayginlasma', 'hsYayginlasmaBar', 100));
+        document.getElementById('dwsScore').addEventListener('input', () => updateProgressBar('dwsScore', 'dwsBar', 100));
+        document.getElementById('intenseyeScore').addEventListener('input', () => updateVerticalProgressBar('intenseyeScore', 'intenseyeBar', 100));
+        document.getElementById('yasalScore').addEventListener('input', () => updateDoughnutChart('yasalScore', yasalChart));
+        ['valFR0', 'valFR1', 'valFR2', 'valRK'].forEach(id => document.getElementById(id).addEventListener('input', updateBarChart));
+
+        settingsBtn.addEventListener('click', () => { colorTool.style.display = 'block'; });
+        closeTool.addEventListener('click', () => { colorTool.style.display = 'none'; });
+
+        function updateCSSVariable(varName, color) { root.style.setProperty(varName, color); }
+
+        document.addEventListener('click', (e) => {
+            const isCardClick = e.target.closest('.card');
+            const isToolClick = e.target.closest('#colorTool');
+            const isSettingsBtnClick = e.target.closest('#settingsBtn');
+
+            if (!isCardClick && !isToolClick && !isSettingsBtnClick) {
+                selectedCard = null;
+                cards.forEach(c => c.style.outline = 'none');
+                selectedCardLabel.innerText = 'Tümü';
+            }
+        });
+
+        cards.forEach(card => {
+            card.addEventListener('click', (e) => {
+                if(e.target.isContentEditable || e.target.tagName === 'INPUT' || e.target.tagName === 'CANVAS') return;
+                cards.forEach(c => c.style.outline = 'none');
+                selectedCard = card;
+                const vurguColor = getComputedStyle(root).getPropertyValue('--vurgu-color').trim();
+                card.style.outline = `2px solid ${vurguColor}`;
+                selectedCardLabel.innerText = 'Seçili Kart';
+            });
+        });
+
+        resetSelectionBtn.addEventListener('click', () => {
+            selectedCard = null;
+            cards.forEach(c => c.style.outline = 'none');
+            selectedCardLabel.innerText = 'Tümü';
+        });
+
+        bgColorPicker.addEventListener('input', (e) => updateCSSVariable('--bg-color', e.target.value));
+        textMainPicker.addEventListener('input', (e) => updateCSSVariable('--text-main', e.target.value));
+        
+        textMutedGlobalPicker.addEventListener('input', (e) => {
+            const newColor = e.target.value;
+            updateCSSVariable('--text-muted', newColor);
+            Chart.defaults.color = newColor;
+            kazaChart.options.scales.y.ticks.color = newColor;
+            kazaChart.options.scales.x.ticks.color = newColor;
+            kazaChart.update();
+            ltcrChart.options.scales.y.ticks.color = newColor;
+            ltcrChart.options.scales.x.ticks.color = newColor;
+            ltcrChart.update();
+            fr2Chart.options.scales.y.ticks.color = newColor;
+            fr2Chart.options.scales.x.ticks.color = newColor;
+            fr2Chart.update();
+            yasalChart.update();
+        });
+        
+        accentColorPicker.addEventListener('input', (e) => {
+            const newColor = e.target.value;
+            updateCSSVariable('--vurgu-color', newColor);
+            if (selectedCard) { selectedCard.style.outlineColor = newColor; }
+            kazaChart.data.datasets[0].backgroundColor[0] = newColor;
+            kazaChart.update();
+        });
+
+        cardBgPicker.addEventListener('input', (e) => {
+            if (selectedCard) {
+                selectedCard.style.backgroundColor = e.target.value;
+            } else {
+                updateCSSVariable('--card-bg', e.target.value);
+                cards.forEach(c => c.style.backgroundColor = '');
+            }
+        });
+
+        borderColorPicker.addEventListener('input', (e) => {
+            if (selectedCard) {
+                selectedCard.style.borderColor = e.target.value;
+            } else {
+                updateCSSVariable('--border-color', e.target.value);
+                cards.forEach(c => c.style.borderColor = '');
+            }
+        });
+
+        borderWidthPicker.addEventListener('input', (e) => {
+            let val = e.target.value + 'px';
+            if (selectedCard) {
+                selectedCard.style.borderWidth = val;
+            } else {
+                updateCSSVariable('--card-border-width', val);
+                cards.forEach(c => c.style.borderWidth = '');
+            }
+        });
+
+        borderRadiusPicker.addEventListener('input', (e) => {
+            let val = e.target.value + 'px';
+            if (selectedCard) {
+                selectedCard.style.borderRadius = val;
+            } else {
+                updateCSSVariable('--card-border-radius', val);
+                cards.forEach(c => c.style.borderRadius = '');
+            }
+        });
+
+        iconColorPicker.addEventListener('input', (e) => {
+            const newColor = e.target.value;
+            if (selectedCard) {
+                const icon = selectedCard.querySelector('.card-icon');
+                if (icon) icon.style.color = newColor;
+            } else {
+                updateCSSVariable('--icon-color', newColor);
+                cards.forEach(c => {
+                    const icon = c.querySelector('.card-icon');
+                    if (icon) icon.style.color = '';
+                });
+            }
+        });
+
+        cardTextMainPicker.addEventListener('input', (e) => {
+            const newColor = e.target.value;
+            if (selectedCard) {
+                const elements = selectedCard.querySelectorAll(selectorsMainText);
+                elements.forEach(el => el.style.color = newColor);
+            }
+        });
+
+        cardTextMutedPicker.addEventListener('input', (e) => {
+            const newColor = e.target.value;
+            if (selectedCard) {
+                const elements = selectedCard.querySelectorAll(selectorsMutedText);
+                elements.forEach(el => el.style.color = newColor);
+            }
+        });
+
+        saveBtn.addEventListener('click', async () => {
+            selectedCard = null;
+            cards.forEach(c => c.style.outline = 'none');
+            selectedCardLabel.innerText = 'Tümü';
+            colorTool.style.display = 'none';
+
+            document.querySelectorAll('input').forEach(input => {
+                input.setAttribute('value', input.value);
+            });
+
+            const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+            try {
+                if (!fileHandle) {
+                    fileHandle = await window.showSaveFilePicker({
+                        types: [{
+                            description: 'HTML Dosyası',
+                            accept: {'text/html': ['.html']},
+                        }],
+                    });
+                }
+                const writable = await fileHandle.createWritable();
+                await writable.write(htmlContent);
+                await writable.close();
+            } catch (err) {
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'dashboard.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        });
+    </script>
+
+</body></html>
