@@ -4,6 +4,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OYAK HORSE | HSE DASHBOARD</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -659,7 +661,7 @@
             <div class="card-content-area">
                 <table style="width: 100%; margin: 0 auto; font-size: 11px;">
                     <tbody>
-                        <tr><th>Dep.</th><th style="text-align: center;">Atölye</th><th style="text-align: right;">Oran</th></tr>
+                        <tr><th>Dep.</th><th style="text-align: center;">Hat</th><th style="text-align: right;">Oran</th></tr>
                         <tr><td contenteditable="true">Döküm</td><td contenteditable="true" style="text-align: center;">1/1</td><td contenteditable="true" style="text-align: right;">100%</td></tr>
                         <tr><td contenteditable="true">Motor</td><td contenteditable="true" style="text-align: center;">3/5</td><td contenteditable="true" style="text-align: right;">60%</td></tr>
                         <tr><td contenteditable="true">VK</td><td contenteditable="true" style="text-align: center;">3/5</td><td contenteditable="true" style="text-align: right;">60%</td></tr>
@@ -806,6 +808,19 @@
     </div>
 
     <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDl7tvu_0TfqTg6G1NwgQxwbaPTcQy8fbE",
+            authDomain: "horse-hse-dashboard.firebaseapp.com",
+            databaseURL: "https://horse-hse-dashboard-default-rtdb.firebaseio.com",
+            projectId: "horse-hse-dashboard",
+            storageBucket: "horse-hse-dashboard.firebasestorage.app",
+            messagingSenderId: "405753934174",
+            appId: "1:405753934174:web:b88677bc79888279bd5fcf"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
         const settingsBtn = document.getElementById('settingsBtn');
         const colorTool = document.getElementById('colorTool');
         const closeTool = document.getElementById('closeTool');
@@ -830,7 +845,6 @@
         const borderRadiusPicker = document.getElementById('borderRadiusPicker');
 
         let selectedCard = null;
-        let fileHandle = null;
 
         const selectorsMainText = '.metric-large, td, .dws-status > span, .accident-badge > span';
         const selectorsMutedText = '.card-title, .metric-sub, th, .dws-status-label';
@@ -1092,6 +1106,27 @@
             kazaChart.update();
         }
 
+        database.ref('dashboard').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('valFR0').innerText = data.fr0 || '0';
+                document.getElementById('valFR1').innerText = data.fr1 || '0';
+                document.getElementById('valFR2').innerText = data.fr2 || '0';
+                document.getElementById('valRK').innerText = data.rk || '0';
+                document.getElementById('dwsScore').innerText = data.dwsScore || '0%';
+                document.getElementById('hsToolScore').innerText = data.hsToolScore || '0';
+                document.getElementById('hsYayginlasma').innerText = data.hsYayginlasma || '0%';
+                document.getElementById('intenseyeScore').innerText = data.intenseyeScore || '0%';
+                document.getElementById('yasalScore').innerText = data.yasalScore || '0%';
+                
+                updateBarChart();
+                updateProgressBar('hsYayginlasma', 'hsYayginlasmaBar');
+                updateProgressBar('dwsScore', 'dwsBar');
+                updateVerticalProgressBar('intenseyeScore', 'intenseyeBar');
+                updateDoughnutChart('yasalScore', yasalChart);
+            }
+        });
+
         document.getElementById('hsYayginlasma').addEventListener('input', () => updateProgressBar('hsYayginlasma', 'hsYayginlasmaBar', 100));
         document.getElementById('dwsScore').addEventListener('input', () => updateProgressBar('dwsScore', 'dwsBar', 100));
         document.getElementById('intenseyeScore').addEventListener('input', () => updateVerticalProgressBar('intenseyeScore', 'intenseyeBar', 100));
@@ -1227,42 +1262,25 @@
             }
         });
 
-        saveBtn.addEventListener('click', async () => {
+        saveBtn.addEventListener('click', () => {
+            const dashboardData = {
+                fr0: document.getElementById('valFR0').innerText,
+                fr1: document.getElementById('valFR1').innerText,
+                fr2: document.getElementById('valFR2').innerText,
+                rk: document.getElementById('valRK').innerText,
+                dwsScore: document.getElementById('dwsScore').innerText,
+                hsToolScore: document.getElementById('hsToolScore').innerText,
+                hsYayginlasma: document.getElementById('hsYayginlasma').innerText,
+                intenseyeScore: document.getElementById('intenseyeScore').innerText,
+                yasalScore: document.getElementById('yasalScore').innerText
+            };
+            
+            database.ref('dashboard').set(dashboardData);
+            
             selectedCard = null;
             cards.forEach(c => c.style.outline = 'none');
             selectedCardLabel.innerText = 'Tümü';
             colorTool.style.display = 'none';
-
-            document.querySelectorAll('input').forEach(input => {
-                input.setAttribute('value', input.value);
-            });
-
-            const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-
-            try {
-                if (!fileHandle) {
-                    fileHandle = await window.showSaveFilePicker({
-                        types: [{
-                            description: 'HTML Dosyası',
-                            accept: {'text/html': ['.html']},
-                        }],
-                    });
-                }
-                const writable = await fileHandle.createWritable();
-                await writable.write(htmlContent);
-                await writable.close();
-            } catch (err) {
-                const blob = new Blob([htmlContent], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'dashboard.html';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
         });
     </script>
-
 </body></html>
