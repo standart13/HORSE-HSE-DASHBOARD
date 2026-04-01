@@ -267,6 +267,9 @@
             margin-right: 2px;
             background: transparent;
             padding-right: 4px;
+            pointer-events: auto;
+            position: relative;
+            z-index: 10;
         }
         .vertical-bar-target-line {
             flex-grow: 1;
@@ -528,7 +531,10 @@
 
     <div class="header">
         <div class="header-left">
-            <div class="brand-logo" contenteditable="true">OYAK HORSE | HSE</div>
+            <div class="brand-logo">
+                <img src="horse.png" style="height: 30px; margin-right: 8px;" alt="Logo">
+                <span contenteditable="true">| HSE</span>
+            </div>
         </div>
         <div class="header-right">
             <i class="fas fa-cog" id="settingsBtn"></i>
@@ -919,56 +925,15 @@
             data: {
                 labels: ['2025', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
                 datasets: [
-                    {
-                        type: 'bar',
-                        label: 'Realisation',
-                        data: [0.5, 0, 0, null, null, null, null, null, null, null, null, null, null],
-                        backgroundColor: '#f97316',
-                        barPercentage: 0.5
-                    },
-                    {
-                        type: 'line',
-                        label: 'Commitment',
-                        data: [null, 7.14, 3.33, 2.25, 1.67, 1.33, 1.11, 0.95, 0.84, 0.73, 0.65, 0.58, 0.53],
-                        borderColor: '#65a30d',
-                        borderWidth: 2,
-                        tension: 0.1,
-                        pointRadius: 0
-                    },
-                    {
-                        type: 'line',
-                        label: 'Target',
-                        data: [0.5, 6.5, 3.0, 2.1, 1.5, 1.2, 1.0, 0.9, 0.8, 0.7, 0.6, 0.55, 0.53],
-                        borderColor: '#1e3a8a',
-                        borderWidth: 2,
-                        tension: 0.1,
-                        pointRadius: 0
-                    }
+                    { type: 'bar', label: 'Realisation', data: [0.5, 0, 0, null, null, null, null, null, null, null, null, null, null], backgroundColor: '#f97316', barPercentage: 0.5 },
+                    { type: 'line', label: 'Commitment', data: [null, 7.14, 3.33, 2.25, 1.67, 1.33, 1.11, 0.95, 0.84, 0.73, 0.65, 0.58, 0.53], borderColor: '#65a30d', borderWidth: 2, tension: 0.1, pointRadius: 0 },
+                    { type: 'line', label: 'Target', data: [0.5, 6.5, 3.0, 2.1, 1.5, 1.2, 1.0, 0.9, 0.8, 0.7, 0.6, 0.55, 0.53], borderColor: '#1e3a8a', borderWidth: 2, tension: 0.1, pointRadius: 0 }
                 ]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                layout: { padding: { top: 5, right: 10, left: 10, bottom: 0 } },
-                plugins: { 
-                    legend: { 
-                        display: true, 
-                        position: 'top', 
-                        align: 'end',
-                        labels: {
-                            boxWidth: 8,
-                            boxHeight: 8,
-                            useBorderRadius: true,
-                            borderRadius: 2,
-                            font: { size: 9 }
-                        }
-                    }, 
-                    tooltip: { enabled: false } 
-                },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { color: Chart.defaults.color, font: {size: 9} }, max: 8 },
-                    x: { grid: { display: false }, border: { display: false }, ticks: { color: Chart.defaults.color, font: {size: 8}, maxRotation: 45, minRotation: 45 } }
-                },
+                responsive: true, maintainAspectRatio: false, layout: { padding: { top: 5, right: 10, left: 10, bottom: 0 } },
+                plugins: { legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 8, boxHeight: 8, useBorderRadius: true, borderRadius: 2, font: { size: 9 } } }, tooltip: { enabled: false } },
+                scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { color: Chart.defaults.color, font: {size: 9} }, max: 8 }, x: { grid: { display: false }, border: { display: false }, ticks: { color: Chart.defaults.color, font: {size: 8}, maxRotation: 45, minRotation: 45 } } },
                 animation: { duration: 0 }
             }
         });
@@ -978,56 +943,15 @@
             data: {
                 labels: ['2023', '2024', '2025', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
                 datasets: [
-                    {
-                        type: 'bar',
-                        label: 'Realisation',
-                        data: [0.96, 0.83, null, 0, 0, 0, null, null, null, null, null, null, null, null, null],
-                        backgroundColor: '#f97316',
-                        barPercentage: 0.5
-                    },
-                    {
-                        type: 'line',
-                        label: 'Commitment',
-                        data: [0.52, 0.52, 1.03, null, null, null, null, null, null, 1.02, 1.05, 1.01, 1.00, 0.98, 0.97],
-                        borderColor: '#fbbf24',
-                        borderWidth: 2,
-                        tension: 0.1,
-                        pointRadius: 0
-                    },
-                    {
-                        type: 'line',
-                        label: 'Target',
-                        data: [0, 0, 1.03, 0, 0, 0, 0, 0, 0, 1.02, 1.05, 1.01, 1.00, 0.98, 0.97],
-                        borderColor: '#78350f',
-                        borderWidth: 2,
-                        tension: 0.1,
-                        pointRadius: 0
-                    }
+                    { type: 'bar', label: 'Realisation', data: [0.96, 0.83, null, 0, 0, 0, null, null, null, null, null, null, null, null, null], backgroundColor: '#f97316', barPercentage: 0.5 },
+                    { type: 'line', label: 'Commitment', data: [0.52, 0.52, 1.03, null, null, null, null, null, null, 1.02, 1.05, 1.01, 1.00, 0.98, 0.97], borderColor: '#fbbf24', borderWidth: 2, tension: 0.1, pointRadius: 0 },
+                    { type: 'line', label: 'Target', data: [0, 0, 1.03, 0, 0, 0, 0, 0, 0, 1.02, 1.05, 1.01, 1.00, 0.98, 0.97], borderColor: '#78350f', borderWidth: 2, tension: 0.1, pointRadius: 0 }
                 ]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                layout: { padding: { top: 5, right: 10, left: 10, bottom: 0 } },
-                plugins: { 
-                    legend: { 
-                        display: true, 
-                        position: 'top', 
-                        align: 'end',
-                        labels: {
-                            boxWidth: 8,
-                            boxHeight: 8,
-                            useBorderRadius: true,
-                            borderRadius: 2,
-                            font: { size: 9 }
-                        }
-                    }, 
-                    tooltip: { enabled: false } 
-                },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { color: Chart.defaults.color, font: {size: 9} }, max: 1.5 },
-                    x: { grid: { display: false }, border: { display: false }, ticks: { color: Chart.defaults.color, font: {size: 8}, maxRotation: 45, minRotation: 45 } }
-                },
+                responsive: true, maintainAspectRatio: false, layout: { padding: { top: 5, right: 10, left: 10, bottom: 0 } },
+                plugins: { legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 8, boxHeight: 8, useBorderRadius: true, borderRadius: 2, font: { size: 9 } } }, tooltip: { enabled: false } },
+                scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { color: Chart.defaults.color, font: {size: 9} }, max: 1.5 }, x: { grid: { display: false }, border: { display: false }, ticks: { color: Chart.defaults.color, font: {size: 8}, maxRotation: 45, minRotation: 45 } } },
                 animation: { duration: 0 }
             }
         });
@@ -1069,9 +993,7 @@
         }
 
         floatInput.addEventListener('blur', updateChartPoint);
-        floatInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') updateChartPoint();
-        });
+        floatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') updateChartPoint(); });
 
         function updateProgressBar(textId, barId, maxVal = 100) {
             let val = parseFloat(document.getElementById(textId).innerText.replace('%', '').replace(',', '.')) || 0;
@@ -1080,7 +1002,7 @@
             let percentage = (val / maxVal) * 100;
             document.getElementById(barId).style.width = percentage + '%';
         }
-        
+
         function updateVerticalProgressBar(textId, barId, maxVal = 100) {
             let val = parseFloat(document.getElementById(textId).innerText.replace('%', '').replace(',', '.')) || 0;
             if (val > maxVal) val = maxVal;
@@ -1109,16 +1031,51 @@
         database.ref('dashboard').on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                document.getElementById('valFR0').innerText = data.fr0 || '0';
-                document.getElementById('valFR1').innerText = data.fr1 || '0';
-                document.getElementById('valFR2').innerText = data.fr2 || '0';
-                document.getElementById('valRK').innerText = data.rk || '0';
-                document.getElementById('dwsScore').innerText = data.dwsScore || '0%';
-                document.getElementById('hsToolScore').innerText = data.hsToolScore || '0';
-                document.getElementById('hsYayginlasma').innerText = data.hsYayginlasma || '0%';
-                document.getElementById('intenseyeScore').innerText = data.intenseyeScore || '0%';
-                document.getElementById('yasalScore').innerText = data.yasalScore || '0%';
+                if (data.content) {
+                    const editableElements = document.querySelectorAll('[contenteditable="true"]');
+                    editableElements.forEach((el, index) => {
+                        const key = el.id ? el.id : 'elem_' + index;
+                        if (data.content[key] !== undefined) {
+                            el.innerText = data.content[key];
+                        }
+                    });
+                }
                 
+                if (data.styles) {
+                    if(data.styles.bgColor) root.style.setProperty('--bg-color', data.styles.bgColor);
+                    if(data.styles.textMain) root.style.setProperty('--text-main', data.styles.textMain);
+                    if(data.styles.textMuted) {
+                        root.style.setProperty('--text-muted', data.styles.textMuted);
+                        Chart.defaults.color = data.styles.textMuted;
+                        kazaChart.options.scales.y.ticks.color = data.styles.textMuted;
+                        kazaChart.options.scales.x.ticks.color = data.styles.textMuted;
+                        ltcrChart.options.scales.y.ticks.color = data.styles.textMuted;
+                        ltcrChart.options.scales.x.ticks.color = data.styles.textMuted;
+                        fr2Chart.options.scales.y.ticks.color = data.styles.textMuted;
+                        fr2Chart.options.scales.x.ticks.color = data.styles.textMuted;
+                    }
+                    if(data.styles.vurguColor) {
+                        root.style.setProperty('--vurgu-color', data.styles.vurguColor);
+                        kazaChart.data.datasets[0].backgroundColor[0] = data.styles.vurguColor;
+                    }
+                    if(data.styles.cardBg) root.style.setProperty('--card-bg', data.styles.cardBg);
+                    if(data.styles.borderColor) root.style.setProperty('--border-color', data.styles.borderColor);
+                    if(data.styles.borderWidth) root.style.setProperty('--card-border-width', data.styles.borderWidth);
+                    if(data.styles.borderRadius) root.style.setProperty('--card-border-radius', data.styles.borderRadius);
+                    if(data.styles.iconColor) root.style.setProperty('--icon-color', data.styles.iconColor);
+                }
+
+                if (data.chartData) {
+                    if (data.chartData.ltcr) {
+                        data.chartData.ltcr.forEach((dsData, i) => { if(ltcrChart.data.datasets[i]) ltcrChart.data.datasets[i].data = dsData; });
+                        ltcrChart.update();
+                    }
+                    if (data.chartData.fr2) {
+                        data.chartData.fr2.forEach((dsData, i) => { if(fr2Chart.data.datasets[i]) fr2Chart.data.datasets[i].data = dsData; });
+                        fr2Chart.update();
+                    }
+                }
+
                 updateBarChart();
                 updateProgressBar('hsYayginlasma', 'hsYayginlasmaBar');
                 updateProgressBar('dwsScore', 'dwsBar');
@@ -1169,7 +1126,7 @@
 
         bgColorPicker.addEventListener('input', (e) => updateCSSVariable('--bg-color', e.target.value));
         textMainPicker.addEventListener('input', (e) => updateCSSVariable('--text-main', e.target.value));
-        
+
         textMutedGlobalPicker.addEventListener('input', (e) => {
             const newColor = e.target.value;
             updateCSSVariable('--text-muted', newColor);
@@ -1185,7 +1142,7 @@
             fr2Chart.update();
             yasalChart.update();
         });
-        
+
         accentColorPicker.addEventListener('input', (e) => {
             const newColor = e.target.value;
             updateCSSVariable('--vurgu-color', newColor);
@@ -1263,16 +1220,35 @@
         });
 
         saveBtn.addEventListener('click', () => {
+            const editableElements = document.querySelectorAll('[contenteditable="true"]');
+            const contentData = {};
+            editableElements.forEach((el, index) => {
+                const key = el.id ? el.id : 'elem_' + index;
+                contentData[key] = el.innerText;
+            });
+
+            const computedStyles = getComputedStyle(root);
+            const styleData = {
+                bgColor: root.style.getPropertyValue('--bg-color') || computedStyles.getPropertyValue('--bg-color').trim(),
+                textMain: root.style.getPropertyValue('--text-main') || computedStyles.getPropertyValue('--text-main').trim(),
+                textMuted: root.style.getPropertyValue('--text-muted') || computedStyles.getPropertyValue('--text-muted').trim(),
+                vurguColor: root.style.getPropertyValue('--vurgu-color') || computedStyles.getPropertyValue('--vurgu-color').trim(),
+                cardBg: root.style.getPropertyValue('--card-bg') || computedStyles.getPropertyValue('--card-bg').trim(),
+                borderColor: root.style.getPropertyValue('--border-color') || computedStyles.getPropertyValue('--border-color').trim(),
+                borderWidth: root.style.getPropertyValue('--card-border-width') || computedStyles.getPropertyValue('--card-border-width').trim(),
+                borderRadius: root.style.getPropertyValue('--card-border-radius') || computedStyles.getPropertyValue('--card-border-radius').trim(),
+                iconColor: root.style.getPropertyValue('--icon-color') || computedStyles.getPropertyValue('--icon-color').trim()
+            };
+
+            const chartData = {
+                ltcr: ltcrChart.data.datasets.map(ds => ds.data),
+                fr2: fr2Chart.data.datasets.map(ds => ds.data)
+            };
+
             const dashboardData = {
-                fr0: document.getElementById('valFR0').innerText,
-                fr1: document.getElementById('valFR1').innerText,
-                fr2: document.getElementById('valFR2').innerText,
-                rk: document.getElementById('valRK').innerText,
-                dwsScore: document.getElementById('dwsScore').innerText,
-                hsToolScore: document.getElementById('hsToolScore').innerText,
-                hsYayginlasma: document.getElementById('hsYayginlasma').innerText,
-                intenseyeScore: document.getElementById('intenseyeScore').innerText,
-                yasalScore: document.getElementById('yasalScore').innerText
+                content: contentData,
+                styles: styleData,
+                chartData: chartData
             };
             
             database.ref('dashboard').set(dashboardData);
