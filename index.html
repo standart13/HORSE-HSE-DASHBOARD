@@ -253,7 +253,7 @@
         .vertical-bar-target-group {
             position: absolute;
             bottom: 90%;
-            left: -67px; 
+            left: -65px; 
             width: 85px;
             display: flex;
             align-items: center;
@@ -265,11 +265,8 @@
             font-weight: 800;
             color: var(--text-main);
             margin-right: 2px;
-            background: transparent;
+            background: var(--card-bg);
             padding-right: 4px;
-            pointer-events: auto;
-            position: relative;
-            z-index: 10;
         }
         .vertical-bar-target-line {
             flex-grow: 1;
@@ -533,12 +530,12 @@
         <div class="header-left">
             <div class="brand-logo">
                 <img src="horse.png" style="height: 50px; margin-right: 10px;" alt="Logo">
-                <span contenteditable="true">| HSE</span>
+                <span contenteditable="true" id="headerTitle">| HSE</span>
             </div>
         </div>
         <div class="header-right">
             <i class="fas fa-cog" id="settingsBtn"></i>
-            <div class="date" contenteditable="true">31 MART 2026</div>
+            <div class="date" contenteditable="true" id="headerDate">0</div>
         </div>
     </div>
 
@@ -577,13 +574,13 @@
             <div class="card-header">
                 <div class="card-header-left">
                     <div class="card-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                    <div class="card-title" contenteditable="true">KATEGORİSEL İŞ KAZALARI</div>
+                    <div class="card-title" contenteditable="true" id="titleKaza">KATEGORİSEL İŞ KAZALARI</div>
                 </div>
             </div>
             <div class="card-content-area">
                 <div class="accident-inputs">
-                    <div class="accident-badge">FR0: <span id="valFR0" contenteditable="true">1</span></div>
-                    <div class="accident-badge">FR1: <span id="valFR1" contenteditable="true">1</span></div>
+                    <div class="accident-badge">FR0: <span id="valFR0" contenteditable="true">0</span></div>
+                    <div class="accident-badge">FR1: <span id="valFR1" contenteditable="true">0</span></div>
                     <div class="accident-badge">FR2: <span id="valFR2" contenteditable="true">0</span></div>
                     <div class="accident-badge">RK: <span id="valRK" contenteditable="true">0</span></div>
                 </div>
@@ -595,7 +592,7 @@
             <div class="card-header">
                 <div class="card-header-left">
                     <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
-                    <div class="card-title" contenteditable="true">LTCR</div>
+                    <div class="card-title" contenteditable="true" id="titleLtcr">LTCR</div>
                 </div>
                 <div class="card-subtitle-hint"></div>
             </div>
@@ -611,7 +608,7 @@
             <div class="card-header">
                 <div class="card-header-left">
                     <div class="card-icon"><i class="fa-solid fa-chart-area"></i></div>
-                    <div class="card-title" contenteditable="true">FR2</div>
+                    <div class="card-title" contenteditable="true" id="titleFr2">FR2</div>
                 </div>
             </div>
             <div class="card-content-area" id="fr2Container">
@@ -625,16 +622,16 @@
             <div class="card-header">
                 <div class="card-header-left">
                     <div class="card-icon"><i class="fa-solid fa-clipboard-list"></i></div>
-                    <div class="card-title" contenteditable="true">POSTA RİSK DEĞERLENDİRME</div>
+                    <div class="card-title" contenteditable="true" id="titlePosta">POSTA RİSK DEĞERLENDİRME</div>
                 </div>
             </div>
             <div class="card-content-area">
                 <table style="width: 70%; margin: 0 auto;">
                     <tbody><tr><th>Departman</th><th>İlerleme</th></tr>
-                    <tr><td contenteditable="true">VK</td><td contenteditable="true">93%</td></tr>
-                    <tr><td contenteditable="true">Motor</td><td contenteditable="true">100%</td></tr>
-                    <tr><td contenteditable="true">Döküm</td><td contenteditable="true">100%</td></tr>
-                    <tr><td contenteditable="true">Lojistik</td><td contenteditable="true">100%</td></tr>
+                    <tr><td contenteditable="true" id="postaDep1">VK</td><td contenteditable="true" id="postaVal1">0%</td></tr>
+                    <tr><td contenteditable="true" id="postaDep2">Motor</td><td contenteditable="true" id="postaVal2">0%</td></tr>
+                    <tr><td contenteditable="true" id="postaDep3">Döküm</td><td contenteditable="true" id="postaVal3">0%</td></tr>
+                    <tr><td contenteditable="true" id="postaDep4">Lojistik</td><td contenteditable="true" id="postaVal4">0%</td></tr>
                 </tbody></table>
             </div>
         </div>
@@ -643,16 +640,16 @@
             <div class="card-header">
                 <div class="card-header-left">
                     <div class="card-icon"><i class="fa-solid fa-list-check"></i></div>
-                    <div class="card-title" contenteditable="true">CA HAFTALIK ANİMASYON TAKİBİ</div>
+                    <div class="card-title" contenteditable="true" id="titleCa">CA HAFTALIK ANİMASYON TAKİBİ</div>
                 </div>
             </div>
             <div class="card-content-area">
                 <table style="width: 80%; margin: 0 auto;">
                     <tbody><tr><th>Atölye</th><th>Atölye Sayısı</th><th>Devreye Alan</th></tr>
-                    <tr><td contenteditable="true">VK</td><td contenteditable="true">2</td><td contenteditable="true">1</td></tr>
-                    <tr><td contenteditable="true">Motor</td><td contenteditable="true">3</td><td contenteditable="true">2</td></tr>
-                    <tr><td contenteditable="true">Döküm</td><td contenteditable="true">2</td><td contenteditable="true">2</td></tr>
-                    <tr><td contenteditable="true">Lojistik</td><td contenteditable="true">1</td><td contenteditable="true">1</td></tr>
+                    <tr><td contenteditable="true" id="caDep1">VK</td><td contenteditable="true" id="caVal1_1">0</td><td contenteditable="true" id="caVal1_2">0</td></tr>
+                    <tr><td contenteditable="true" id="caDep2">Motor</td><td contenteditable="true" id="caVal2_1">0</td><td contenteditable="true" id="caVal2_2">0</td></tr>
+                    <tr><td contenteditable="true" id="caDep3">Döküm</td><td contenteditable="true" id="caVal3_1">0</td><td contenteditable="true" id="caVal3_2">0</td></tr>
+                    <tr><td contenteditable="true" id="caDep4">Lojistik</td><td contenteditable="true" id="caVal4_1">0</td><td contenteditable="true" id="caVal4_2">0</td></tr>
                 </tbody></table>
             </div>
         </div>
@@ -661,18 +658,18 @@
             <div class="card-header">
                 <div class="card-header-left">
                     <div class="card-icon"><i class="fa-solid fa-qrcode"></i></div>
-                    <div class="card-title" contenteditable="true">LOTO FOS QR</div>
+                    <div class="card-title" contenteditable="true" id="titleLoto">LOTO FOS QR</div>
                 </div>
             </div>
             <div class="card-content-area">
                 <table style="width: 100%; margin: 0 auto; font-size: 11px;">
                     <tbody>
                         <tr><th>Dep.</th><th style="text-align: center;">Hat</th><th style="text-align: right;">Oran</th></tr>
-                        <tr><td contenteditable="true">Döküm</td><td contenteditable="true" style="text-align: center;">1/1</td><td contenteditable="true" style="text-align: right;">100%</td></tr>
-                        <tr><td contenteditable="true">Motor</td><td contenteditable="true" style="text-align: center;">3/5</td><td contenteditable="true" style="text-align: right;">60%</td></tr>
-                        <tr><td contenteditable="true">VK</td><td contenteditable="true" style="text-align: center;">3/5</td><td contenteditable="true" style="text-align: right;">60%</td></tr>
-                        <tr><td contenteditable="true">Loj.</td><td contenteditable="true" style="text-align: center;">1/1</td><td contenteditable="true" style="text-align: right;">100%</td></tr>
-                        <tr><td contenteditable="true">Bakım</td><td contenteditable="true" style="text-align: center;">0/1</td><td contenteditable="true" style="text-align: right;">0%</td></tr>
+                        <tr><td contenteditable="true" id="lotoDep1">Döküm</td><td contenteditable="true" class="loto-fraction" id="lotoFrac1" style="text-align: center;">0/0</td><td contenteditable="true" id="lotoPerc1" style="text-align: right;">0%</td></tr>
+                        <tr><td contenteditable="true" id="lotoDep2">Motor</td><td contenteditable="true" class="loto-fraction" id="lotoFrac2" style="text-align: center;">0/0</td><td contenteditable="true" id="lotoPerc2" style="text-align: right;">0%</td></tr>
+                        <tr><td contenteditable="true" id="lotoDep3">VK</td><td contenteditable="true" class="loto-fraction" id="lotoFrac3" style="text-align: center;">0/0</td><td contenteditable="true" id="lotoPerc3" style="text-align: right;">0%</td></tr>
+                        <tr><td contenteditable="true" id="lotoDep4">Loj.</td><td contenteditable="true" class="loto-fraction" id="lotoFrac4" style="text-align: center;">0/0</td><td contenteditable="true" id="lotoPerc4" style="text-align: right;">0%</td></tr>
+                        <tr><td contenteditable="true" id="lotoDep5">Bakım</td><td contenteditable="true" class="loto-fraction" id="lotoFrac5" style="text-align: center;">0/0</td><td contenteditable="true" id="lotoPerc5" style="text-align: right;">0%</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -682,19 +679,19 @@
             <div class="card-header">
                 <div class="card-header-left">
                     <div class="card-icon"><i class="fa-solid fa-bars-progress"></i></div>
-                    <div class="card-title" contenteditable="true" style="font-size: 12.5px;">HAT BAZINDA DWS</div>
+                    <div class="card-title" contenteditable="true" id="titleDws" style="font-size: 12.5px;">HAT BAZINDA DWS</div>
                 </div>
             </div>
             <div class="card-content-area">
                 <div style="width: 100%; margin: 0 auto; padding-left: 8px;">
-                    <div class="metric-large" id="dwsScore" contenteditable="true" style="font-size: 35px;">85%</div>
+                    <div class="metric-large" id="dwsScore" contenteditable="true" style="font-size: 35px;">0%</div>
                     <div class="dws-status" style="font-size: 15px; flex-wrap: wrap; gap: 4px;">
-                        <span contenteditable="true">12</span> <span class="dws-status-label" style="font-size: 11px;">OK</span>
+                        <span contenteditable="true" id="dwsOk">0</span> <span class="dws-status-label" style="font-size: 11px;">OK</span>
                         <span class="dws-separator" style="margin: 0 2px;">|</span>
-                        <span contenteditable="true">2</span> <span class="dws-status-label" style="font-size: 11px;">DEVAM</span>
+                        <span contenteditable="true" id="dwsDevam">0</span> <span class="dws-status-label" style="font-size: 11px;">DEVAM</span>
                     </div>
                     <div class="progress-bar-bg">
-                        <div id="dwsBar" class="progress-bar-fill" style="width: 85%;"></div>
+                        <div id="dwsBar" class="progress-bar-fill" style="width: 0%;"></div>
                     </div>
                 </div>
             </div>
@@ -704,21 +701,21 @@
             <div class="card-header">
                 <div class="card-header-left">
                     <div class="card-icon"><i class="fa-solid fa-clipboard-check"></i></div>
-                    <div class="card-title" contenteditable="true" style="font-size: 10px;">HS KRİTERLERİ</div>
+                    <div class="card-title" contenteditable="true" id="titleHsTool" style="font-size: 10px;">HS KRİTERLERİ</div>
                 </div>
             </div>
             <div class="card-content-area">
                 <div class="dojo-metrics" style="padding: 8px; flex-direction: column; align-items: flex-start; gap: 8px; background: none; border: none;">
                     <div class="dojo-item" style="text-align: left; width: 100%;">
-                        <div class="metric-large" id="hsToolScore" contenteditable="true" style="font-size: 24px;">1.65</div>
-                        <div class="metric-sub" contenteditable="true" style="margin-top: 0px;">Skor</div>
+                        <div class="metric-large" id="hsToolScore" contenteditable="true" style="font-size: 24px;">0</div>
+                        <div class="metric-sub" contenteditable="true" id="hsToolLabel" style="margin-top: 0px;">Skor</div>
                     </div>
                     <div class="dojo-divider" style="height: 1px; width: 100%;"></div>
                     <div class="dojo-item" style="text-align: left; width: 100%;">
-                        <div class="metric-large" id="hsYayginlasma" contenteditable="true" style="font-size: 24px;">65%</div>
-                        <div class="metric-sub" contenteditable="true" style="margin-top: 0px;">Hedef: %85</div>
+                        <div class="metric-large" id="hsYayginlasma" contenteditable="true" style="font-size: 24px;">0%</div>
+                        <div class="metric-sub" contenteditable="true" id="hsYayginlasmaLabel" style="margin-top: 0px;">Hedef: %0</div>
                         <div class="progress-bar-bg" style="margin-top: 4px; height: 5px;">
-                            <div id="hsYayginlasmaBar" class="progress-bar-fill" style="width: 65%;"></div>
+                            <div id="hsYayginlasmaBar" class="progress-bar-fill" style="width: 0%;"></div>
                         </div>
                     </div>
                 </div>
@@ -729,19 +726,19 @@
             <div class="card-header">
                 <div class="card-header-left">
                     <div class="card-icon"><i class="fa-solid fa-helmet-safety"></i></div>
-                    <div class="card-title" contenteditable="true" style="font-size: 13px;">AKTİF ŞANTİYE SAYISI & HS CHECK</div>
+                    <div class="card-title" contenteditable="true" id="titleSantiye" style="font-size: 13px;">AKTİF ŞANTİYE SAYISI & HS CHECK</div>
                 </div>
             </div>
             <div class="card-content-area">
                 <div class="dojo-metrics" style="padding: 0; background: none; border: none;">
                     <div class="dojo-item">
-                        <div class="metric-large" contenteditable="true" style="font-size: 42px;">1</div>
-                        <div class="metric-sub" contenteditable="true" style="font-size: 13px;">Açık Şantiye</div>
+                        <div class="metric-large" contenteditable="true" id="santiyeVal1" style="font-size: 42px;">0</div>
+                        <div class="metric-sub" contenteditable="true" id="santiyeLabel1" style="font-size: 13px;">Açık Şantiye</div>
                     </div>
                     <div class="dojo-divider"></div>
                     <div class="dojo-item">
-                        <div class="metric-large" contenteditable="true" style="font-size: 42px;">12</div>
-                        <div class="metric-sub" contenteditable="true" style="font-size: 13px;">HS Check</div>
+                        <div class="metric-large" contenteditable="true" id="santiyeVal2" style="font-size: 42px;">0</div>
+                        <div class="metric-sub" contenteditable="true" id="santiyeLabel2" style="font-size: 13px;">HS Check</div>
                     </div>
                 </div>
             </div>
@@ -751,14 +748,14 @@
             <div class="card-header">
                 <div class="card-header-left">
                     <div class="card-icon"><i class="fa-solid fa-file-shield"></i></div>
-                    <div class="card-title" contenteditable="true" style="font-size: 13px;">YASAL İŞ GÜVENLİĞi eğitimi</div>
+                    <div class="card-title" contenteditable="true" id="titleYasal" style="font-size: 13px;">YASAL İŞ GÜVENLİĞi eğitimi</div>
                 </div>
             </div>
             <div class="card-content-area">
                 <div class="chart-wrapper-row">
                     <div style="pointer-events: auto;">
-                        <div class="metric-large" id="yasalScore" contenteditable="true" style="font-size: 42px;">91%</div>
-                        <div class="metric-sub" contenteditable="true" style="font-size: 13px;">Tamamlanma Oranı</div>
+                        <div class="metric-large" id="yasalScore" contenteditable="true" style="font-size: 42px;">0%</div>
+                        <div class="metric-sub" contenteditable="true" id="yasalLabel" style="font-size: 13px;">Tamamlanma Oranı</div>
                     </div>
                     <div class="chart-container"><canvas id="yasalEgitimChart"></canvas></div>
                 </div>
@@ -769,19 +766,19 @@
             <div class="card-header">
                 <div class="card-header-left">
                     <div class="card-icon"><i class="fa-solid fa-person-chalkboard"></i></div>
-                    <div class="card-title" contenteditable="true" style="font-size: 13px;">RİSK FARKINDALIĞI semineri</div>
+                    <div class="card-title" contenteditable="true" id="titleDojo" style="font-size: 13px;">RİSK FARKINDALIĞI semineri</div>
                 </div>
             </div>
             <div class="card-content-area">
                 <div class="dojo-metrics">
                     <div class="dojo-item">
-                        <div class="metric-large" contenteditable="true" style="font-size: 42px;">2</div>
-                        <div class="metric-sub" contenteditable="true" style="font-size: 13px;">Seans Yapıldı</div>
+                        <div class="metric-large" contenteditable="true" id="dojoVal1" style="font-size: 42px;">0</div>
+                        <div class="metric-sub" contenteditable="true" id="dojoLabel1" style="font-size: 13px;">Seans Yapıldı</div>
                     </div>
                     <div class="dojo-divider"></div>
                     <div class="dojo-item">
-                        <div class="metric-large" contenteditable="true" style="font-size: 42px;">45</div>
-                        <div class="metric-sub" contenteditable="true" style="font-size: 13px;">Kişiye Verildi</div>
+                        <div class="metric-large" contenteditable="true" id="dojoVal2" style="font-size: 42px;">0</div>
+                        <div class="metric-sub" contenteditable="true" id="dojoLabel2" style="font-size: 13px;">Kişiye Verildi</div>
                     </div>
                 </div>
             </div>
@@ -791,21 +788,21 @@
             <div class="card-header">
                 <div class="card-header-left">
                     <div class="card-icon"><i class="fa-solid fa-camera-retro"></i></div>
-                    <div class="card-title" contenteditable="true" style="font-size: 13px;">INTENSEYE GÜVENLİK PUANI</div>
+                    <div class="card-title" contenteditable="true" id="titleIntenseye" style="font-size: 13px;">INTENSEYE GÜVENLİK PUANI</div>
                 </div>
             </div>
             <div class="card-content-area" style="flex-direction: row; justify-content: space-between; align-items: center;">
                 <div>
-                    <div class="metric-large" id="intenseyeScore" contenteditable="true" style="font-size: 42px;">90%</div>
-                    <div class="metric-sub" contenteditable="true" style="font-size: 13px;">+%1 vs Önceki ay</div>
+                    <div class="metric-large" id="intenseyeScore" contenteditable="true" style="font-size: 42px;">0%</div>
+                    <div class="metric-sub" contenteditable="true" id="intenseyeLabel" style="font-size: 13px;">+%0 vs Önceki ay</div>
                 </div>
                 <div class="vertical-bar-wrapper-container">
                     <div class="vertical-bar-target-group">
-                        <span class="vertical-bar-target-text" style="font-size: 12px;" contenteditable="true">Hedef %90</span>
+                        <span class="vertical-bar-target-text" style="font-size: 12px;">Hedef %90</span>
                         <div class="vertical-bar-target-line"></div>
                     </div>
                     <div class="vertical-bar-container">
-                        <div id="intenseyeBar" class="vertical-bar-fill" style="height: 90%;"></div>
+                        <div id="intenseyeBar" class="vertical-bar-fill" style="height: 0%;"></div>
                     </div>
                 </div>
             </div>
@@ -894,14 +891,14 @@
             layout: { padding: 0 }
         };
 
-        let yasalChart = new Chart(document.getElementById('yasalEgitimChart'), { type: 'doughnut', data: { datasets: [{ data: [94, 6], backgroundColor: ['#059669', '#f1f5f9'], borderWidth: 0 }] }, options: doughnutOptions });
+        let yasalChart = new Chart(document.getElementById('yasalEgitimChart'), { type: 'doughnut', data: { datasets: [{ data: [0, 100], backgroundColor: ['#059669', '#f1f5f9'], borderWidth: 0 }] }, options: doughnutOptions });
 
         let kazaChart = new Chart(document.getElementById('kazaKategoriChart'), {
             type: 'bar',
             data: {
                 labels: ['FR0', 'FR1', 'FR2', 'RK'],
                 datasets: [{
-                    data: [0, 1, 0, 0],
+                    data: [0, 0, 0, 0],
                     backgroundColor: [getComputedStyle(root).getPropertyValue('--vurgu-color').trim(), '#d97706', '#dc2626', '#2563eb'],
                     borderRadius: 4,
                     borderWidth: 0,
@@ -1028,14 +1025,32 @@
             kazaChart.update();
         }
 
+        document.querySelectorAll('.loto-fraction').forEach(fractionInput => {
+            fractionInput.addEventListener('input', function() {
+                const text = this.innerText.trim();
+                const parts = text.split('/');
+                const percentCell = this.nextElementSibling;
+                if (parts.length === 2) {
+                    const num = parseFloat(parts[0]);
+                    const den = parseFloat(parts[1]);
+                    if (!isNaN(num) && !isNaN(den) && den !== 0) {
+                        const percentage = Math.round((num / den) * 100);
+                        percentCell.innerText = percentage + '%';
+                    } else {
+                        percentCell.innerText = '-';
+                    }
+                }
+            });
+        });
+
         database.ref('dashboard').on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 if (data.content) {
                     const editableElements = document.querySelectorAll('[contenteditable="true"]');
-                    editableElements.forEach((el, index) => {
-                        const key = el.id ? el.id : 'elem_' + index;
-                        if (data.content[key] !== undefined) {
+                    editableElements.forEach((el) => {
+                        const key = el.id;
+                        if (key && data.content[key] !== undefined) {
                             el.innerText = data.content[key];
                         }
                     });
@@ -1222,9 +1237,9 @@
         saveBtn.addEventListener('click', () => {
             const editableElements = document.querySelectorAll('[contenteditable="true"]');
             const contentData = {};
-            editableElements.forEach((el, index) => {
-                const key = el.id ? el.id : 'elem_' + index;
-                contentData[key] = el.innerText;
+            editableElements.forEach((el) => {
+                const key = el.id;
+                if (key) contentData[key] = el.innerText;
             });
 
             const computedStyles = getComputedStyle(root);
