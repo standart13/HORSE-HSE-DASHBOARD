@@ -870,7 +870,11 @@
             afterDatasetsDraw(chart, args, pluginOptions) {
                 const { ctx, data } = chart;
                 ctx.save();
-                ctx.font = 'bold 10px Poppins';
+                if (chart.canvas.id === 'ltcrChart' || chart.canvas.id === 'fr2Chart') {
+                    ctx.font = 'bold 8px Poppins';
+                } else {
+                    ctx.font = 'bold 10px Poppins';
+                }
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'bottom';
                 
