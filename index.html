@@ -483,15 +483,17 @@
         }
 
         .floating-input {
-            position: absolute;
+            position: fixed;
             width: 40px;
             padding: 2px;
             display: none;
-            z-index: 50;
+            z-index: 1050;
             background: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             font-weight: bold;
             color: var(--text-main);
+            border: 2px solid var(--vurgu-color);
+            border-radius: 6px;
         }
 
         .reset-btn {
@@ -535,6 +537,8 @@
     </style>
 </head>
 <body>
+
+    <input type="text" id="floatingInput" class="floating-input" value="">
 
     <div class="header">
         <div class="header-left">
@@ -607,7 +611,6 @@
                 <div class="card-subtitle-hint"></div>
             </div>
             <div class="card-content-area" id="ltcrContainer">
-                <input type="text" id="floatingInput" class="floating-input" value="">
                 <div class="chart-container-large" style="margin-top: 0;">
                     <canvas id="ltcrChart"></canvas>
                 </div>
@@ -967,44 +970,58 @@
             }
         });
 
+        // ----- ÇOK DAHA İYİ TIKLAMA VE DÜZENLEME MANTIĞI -----
         const floatInput = document.getElementById('floatingInput');
         let editDatasetIndex = -1;
         let editDataIndex = -1;
+        let activeChart = null;
 
-        document.getElementById('ltcrChart').addEventListener('click', function(evt) {
-            const points = ltcrChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
-            if (points.length) {
-                const point = points[0];
-                editDatasetIndex = point.datasetIndex;
-                editDataIndex = point.index;
-                const value = ltcrChart.data.datasets[editDatasetIndex].data[editDataIndex];
+        function handleChartClick(evt, chartInstance) {
+            // mode: 'index' ve intersect: false sayesinde tam sütunun dikey hizasına tıklamak yeterli!
+            const elements = chartInstance.getElementsAtEventForMode(evt, 'index', { intersect: false }, true);
+            
+            if (elements.length) {
+                // Her zaman "Realisation" (gerçekleşen veri çubuğu) olan ilk seti (index 0) güncelleyeceğiz.
+                editDatasetIndex = 0; 
+                editDataIndex = elements[0].index;
+                activeChart = chartInstance;
                 
-                const canvasRect = this.getBoundingClientRect();
-                const containerRect = document.getElementById('ltcrContainer').getBoundingClientRect();
+                const value = chartInstance.data.datasets[editDatasetIndex].data[editDataIndex];
                 
-                const relativeX = canvasRect.left - containerRect.left + point.element.x;
-                const relativeY = canvasRect.top - containerRect.top + point.element.y;
-
+                // Kutucuğu grafiğin içindeki boş bir alanda bile olsan tam fareyle tıkladığın yerde açıyoruz
                 floatInput.style.display = 'block';
-                floatInput.style.left = (relativeX - 22) + 'px';
-                floatInput.style.top = (relativeY - 26) + 'px';
+                floatInput.style.left = (evt.clientX - 20) + 'px'; 
+                floatInput.style.top = (evt.clientY - 30) + 'px';
                 floatInput.value = (value !== null && value !== undefined) ? value : '';
-                floatInput.focus();
+                
+                // Kutucuk açıldığında direkt yazmaya başlayabilmen için odaklanıyor
+                setTimeout(() => floatInput.focus(), 50);
             }
+        }
+
+        // Tıklama olaylarını her iki grafiğe de bağla
+        document.getElementById('ltcrChart').addEventListener('click', function(evt) {
+            handleChartClick(evt, ltcrChart);
+        });
+
+        document.getElementById('fr2Chart').addEventListener('click', function(evt) {
+            handleChartClick(evt, fr2Chart);
         });
 
         function updateChartPoint() {
-            if (editDatasetIndex !== -1 && editDataIndex !== -1) {
+            if (activeChart && editDatasetIndex !== -1 && editDataIndex !== -1) {
+                // Virgülü noktaya çevirip sayıyı kaydediyoruz
                 let rawVal = floatInput.value.replace(',', '.');
                 let val = parseFloat(rawVal);
-                ltcrChart.data.datasets[editDatasetIndex].data[editDataIndex] = isNaN(val) ? null : val;
-                ltcrChart.update();
+                activeChart.data.datasets[editDatasetIndex].data[editDataIndex] = isNaN(val) ? null : val;
+                activeChart.update();
             }
             floatInput.style.display = 'none';
         }
 
         floatInput.addEventListener('blur', updateChartPoint);
         floatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') updateChartPoint(); });
+        // -----------------------------------------------------------
 
         function updateProgressBar(textId, barId, maxVal = 100) {
             let val = parseFloat(document.getElementById(textId).innerText.replace('%', '').replace(',', '.')) || 0;
