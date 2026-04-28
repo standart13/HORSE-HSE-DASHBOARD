@@ -586,11 +586,15 @@
         
         <div class="card col-4" id="card_kaza" style="outline: none;">
             <div class="card-header">
-                <div class="card-header-left">
-                    <div class="card-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                    <div class="card-title" contenteditable="true" id="titleKaza">KATEGORİSEL İŞ KAZALARI</div>
-                </div>
-            </div>
+    <div class="card-header-left">
+        <div class="card-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="card-title" contenteditable="true" id="titleKaza">KATEGORİSEL İŞ KAZALARI</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px; pointer-events: auto;">
+        <span contenteditable="true" id="kazasizGunSayi" style="font-size: 22px; font-weight: 800; color: var(--vurgu-color); outline: none; min-width: 20px; display: inline-block;">&nbsp;</span>
+        <span contenteditable="true" id="kazasizGunLabel" style="font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; outline: none;">Gün Kazasız</span>
+    </div>
+</div>
             <div class="card-content-area">
                 <div class="accident-inputs">
                     <div class="accident-badge">FR0: <span id="valFR0" contenteditable="true">&nbsp;</span></div>
