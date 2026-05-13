@@ -1,892 +1,1311 @@
 <!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HORSE HSSE Dashboard - Bursa</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body {
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
-    background: #f0f0f0;
-  }
+<html lang="tr" style="--text-muted: #000000; --text-main: #000000; --icon-color: #0b2941; --card-border-radius: 10px; --card-border-width: 1px;"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OYAK HORSE | HSE DASHBOARD</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --card-border-width: 1px;
+            --card-border-radius: 10px;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --vurgu-color: #004279;
+            --icon-color: #004279;
+            --accent-green: #059669;
+            --accent-yellow: #d97706;
+            --accent-red: #dc2626;
+        }
 
-  .dashboard {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: #ffffff;
-  }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 16px 32px;
+            color: var(--text-main);
+            transition: background-color 0.2s ease, color 0.2s ease;
+            height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
 
-  .header {
-    height: 8vh;
-    min-height: 60px;
-    background: linear-gradient(135deg, #0a0e1a 0%, #1a2540 50%, #0a0e1a 100%);
-    background-image:
-      radial-gradient(circle at 30% 50%, rgba(40,80,140,0.4) 0%, transparent 50%),
-      radial-gradient(circle at 70% 50%, rgba(30,60,120,0.3) 0%, transparent 50%),
-      linear-gradient(135deg, #0a0e1a 0%, #1a2540 50%, #0a0e1a 100%);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 30px;
-    color: white;
-    border-bottom: 2px solid #000;
-  }
+        [contenteditable="true"]:hover, [contenteditable="true"]:focus {
+            background-color: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            cursor: text;
+            outline: 1px dashed var(--vurgu-color);
+        }
 
-  .header-logo {
-    height: 60%;
-    max-height: 45px;
-    filter: invert(1) brightness(2);
-  }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 2px;
+            border-bottom: 2px solid var(--border-color);
+            flex-shrink: 0;
+        }
 
-  .header-title {
-    font-size: clamp(20px, 2.5vw, 36px);
-    font-weight: 700;
-    letter-spacing: 4px;
-  }
+        .brand-logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
+            outline: none;
+            display: flex;
+            align-items: center;
+        }
 
-  .header-location {
-    font-size: clamp(16px, 1.8vw, 26px);
-    font-weight: 600;
-  }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
 
-  .connection-status { display: none !important; }
+        .header .date {
+            font-size: 13px;
+            color: var(--vurgu-color);
+            font-weight: 700;
+            background: #e0e7ff;
+            padding: 6px 14px;
+            border-radius: 6px;
+            outline: none;
+            min-width: 80px;
+            text-align: center;
+        }
 
-  /* ===== MAIN LAYOUT =====
-     Columns:
-       1: Slogan + dept labels (110px)
-       2-4: FR0, FR1, FR2 accidents
-       5: GAP
-       6: Days
-       7: GAP
-       8-9: FR1 Target + MTD
-       10: GAP
-       11-12: FR2 Target + MTD
-       13: GAP
-       14-15: LTCR Target + MTD
-  */
-  .main {
-    flex: 1;
-    display: grid;
-    grid-template-columns:
-      110px            /* col 1 */
-      1fr 1fr 1fr      /* col 2-4: FR0,FR1,FR2 */
-      18px             /* col 5: gap */
-      1.1fr            /* col 6: Days */
-      22px             /* col 7: gap */
-      0.75fr 0.75fr    /* col 8-9: FR1 (YENİ) */
-      14px             /* col 10: gap */
-      0.75fr 0.75fr    /* col 11-12: FR2 */
-      14px             /* col 13: gap */
-      0.75fr 0.75fr;   /* col 14-15: LTCR */
-    grid-template-rows:
-      minmax(28px, 4%)
-      minmax(32px, 5%)
-      repeat(6, 1fr);
-    gap: 6px;
-    padding: 12px;
-    background: #ffffff;
-    overflow: hidden;
-  }
+        #settingsBtn {
+            font-size: 18px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        #settingsBtn:hover {
+            color: var(--vurgu-color);
+        }
 
-  /* İŞ GÜVENLİĞİ SENİNLE BAŞLAR slogan block */
-  .slogan-block {
-    grid-column: 1 / 2;
-    grid-row: 1 / 3;
-    background: #000000;
-    border-radius: 4px;
-    padding: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-  .slogan-block img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-  }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            flex-grow: 1;
+            min-height: 0;
+        }
 
-  /* Top-level headers (row 1) */
-  .top-header {
-    background: linear-gradient(180deg, #1e3a8a, #1e40af);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: clamp(11px, 1.05vw, 15px);
-    border-radius: 4px;
-    text-align: center;
-    padding: 2px;
-  }
+        .card {
+            background-color: var(--card-bg);
+            border: var(--card-border-width) solid var(--border-color);
+            border-radius: var(--card-border-radius);
+            padding: 16px 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            transition: border-width 0.1s, outline 0.1s;
+            cursor: pointer;
+            overflow: hidden;
+        }
 
-  .accidents-top { grid-column: 2 / 5; grid-row: 1 / 2; }
-  .days-top      { grid-column: 6 / 7; grid-row: 1 / 3; line-height: 1.15; flex-direction: column; }
-  .fr1-top       { grid-column: 8 / 10; grid-row: 1 / 2; }
-  .fr2-top       { grid-column: 11 / 13; grid-row: 1 / 2; }
-  .ltcr-top      { grid-column: 14 / 16; grid-row: 1 / 2; }
+        .col-2 { grid-column: span 2; }
+        .col-3 { grid-column: span 3; }
+        .col-4 { grid-column: span 4; }
+        .col-5 { grid-column: span 5; }
+        .col-6 { grid-column: span 6; }
 
-  /* Sub-headers (row 2) */
-  .sub-header {
-    background: linear-gradient(180deg, #2563eb, #1e40af);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: clamp(10px, 0.85vw, 13px);
-    border-radius: 4px;
-    padding: 2px;
-  }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            pointer-events: none;
+            flex-shrink: 0;
+            justify-content: space-between;
+        }
 
-  .sub-f0 { grid-column: 2 / 3; grid-row: 2 / 3; }
-  .sub-f1 { grid-column: 3 / 4; grid-row: 2 / 3; }
-  .sub-f2 { grid-column: 4 / 5; grid-row: 2 / 3; }
-  .sub-fr1-target  { grid-column: 8 / 9;  grid-row: 2 / 3; }
-  .sub-fr1-mtd     { grid-column: 9 / 10; grid-row: 2 / 3; }
-  .sub-fr2-target  { grid-column: 11 / 12; grid-row: 2 / 3; }
-  .sub-fr2-mtd     { grid-column: 12 / 13; grid-row: 2 / 3; }
-  .sub-ltcr-target { grid-column: 14 / 15; grid-row: 2 / 3; }
-  .sub-ltcr-mtd    { grid-column: 15 / 16; grid-row: 2 / 3; }
+        .card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-  /* Department labels */
-  .dept-label {
-    background: linear-gradient(180deg, #1e40af, #1e3a8a);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: clamp(11px, 1vw, 15px);
-    border-radius: 4px;
-    padding: 4px;
-    text-align: center;
-    line-height: 1.1;
-  }
+        .card-icon {
+            color: var(--icon-color);
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 24px;
+            transition: color 0.2s;
+        }
 
-  /* Data cells */
-  .data-cell {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: clamp(18px, 2.4vw, 36px);
-    color: #000;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: transform 0.1s;
-    user-select: none;
-  }
-  .data-cell:hover { transform: scale(0.98); }
-  .data-cell.zero { background: #4CAF50; color: #000; }
-  .data-cell.nonzero { background: #E53935; color: white; }
+        .card-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            outline: none;
+            pointer-events: auto;
+            line-height: 1.2;
+        }
+        
+        .card-subtitle-hint {
+            font-size: 9px;
+            color: var(--text-muted);
+            font-weight: 500;
+            opacity: 0.7;
+        }
 
-  .days-cell {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: clamp(18px, 2.4vw, 34px);
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-    transition: transform 0.1s;
-  }
-  .days-cell:hover { transform: scale(0.98); }
-  .days-cell.good { background: #4CAF50; color: #000; }
-  .days-cell.bad  { background: #E53935; color: white; }
+        .card-content-area {
+            pointer-events: none;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 0;
+            position: relative;
+        }
 
-  /* Metric cells (FR2 / LTCR) - only in PLANT row */
-  .metric-cell {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: clamp(14px, 1.7vw, 26px);
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-    transition: transform 0.1s;
-  }
-  .metric-cell:hover { transform: scale(0.98); }
-  .metric-cell.target { background: #BDBDBD; color: #000; }
-  .metric-cell.actual-good { background: #4CAF50; color: #000; }
-  .metric-cell.actual-bad { background: #E53935; color: white; }
+        .metric-large {
+            font-size: 38px;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1;
+            letter-spacing: -1px;
+            display: inline-block;
+            outline: none;
+            pointer-events: auto;
+            min-width: 20px;
+        }
 
-  /* Bulletin */
-  .bulletin {
-    background: #fafafa;
-    border: 2px dashed #ccc;
-    border-radius: 6px;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  .bulletin.has-image {
-    border: none;
-    background: transparent;
-  }
-  .bulletin.dragover {
-    border-color: #2196F3;
-    background: #e3f2fd;
-  }
-  .bulletin img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-  }
-  .bulletin-placeholder {
-    text-align: center;
-    color: #888;
-    padding: 20px;
-  }
-  .bulletin-placeholder .icon {
-    font-size: 48px;
-    margin-bottom: 10px;
-  }
-  .bulletin-placeholder .title {
-    font-size: clamp(14px, 1.2vw, 18px);
-    font-weight: 700;
-    margin-bottom: 6px;
-    color: #555;
-  }
-  .bulletin-placeholder .desc {
-    font-size: clamp(10px, 0.85vw, 13px);
-    line-height: 1.4;
-  }
-  .bulletin-controls {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    display: flex;
-    gap: 6px;
-    opacity: 0;
-    transition: opacity 0.2s;
-    z-index: 10;
-  }
-  .bulletin:hover .bulletin-controls { opacity: 1; }
-  .bulletin-btn {
-    background: rgba(0,0,0,0.7);
-    color: white;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-  }
-  .bulletin-btn:hover { background: rgba(0,0,0,0.9); }
-  .bulletin-btn.remove { background: rgba(220,53,69,0.9); }
+        .metric-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 500;
+            outline: none;
+            pointer-events: auto;
+            min-width: 20px;
+        }
 
-  .upload-status {
-    position: absolute;
-    bottom: 8px;
-    left: 8px;
-    background: rgba(0,0,0,0.7);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    display: none;
-    z-index: 5;
-  }
-  .upload-status.show { display: block; }
+        .metric-highlight { color: var(--accent-green) !important; }
+        .metric-vurgu { color: var(--vurgu-color) !important; }
 
-  #file-input { display: none; }
+        .dws-status {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-top: 6px;
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
 
-  .modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal.show { display: flex; }
-  .modal-content {
-    background: white;
-    padding: 24px;
-    border-radius: 8px;
-    min-width: 300px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  }
-  .modal-content h3 {
-    margin-bottom: 14px;
-    font-size: 16px;
-  }
-  .modal-content input {
-    width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-bottom: 14px;
-  }
-  .modal-buttons {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-  }
-  .modal-buttons button {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-  }
-  .btn-save { background: #2196F3; color: white; }
-  .btn-cancel { background: #ddd; color: #333; }
-</style>
+        .dws-status span {
+            outline: none;
+            pointer-events: auto;
+            min-width: 15px;
+        }
+
+        .dws-status-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-right: 6px;
+        }
+        
+        .dws-separator {
+            color: var(--border-color); 
+            font-weight: 400; 
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .progress-bar-bg {
+            background-color: var(--border-color);
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background-color: var(--accent-green);
+            transition: width 0.4s ease, background-color 0.2s ease;
+        }
+
+        .vertical-bar-wrapper-container {
+            position: relative;
+            height: 100px;
+            display: flex;
+            align-items: flex-end;
+            width: 24px;
+            margin-right: 25px;
+        }
+        .vertical-bar-target-group {
+            position: absolute;
+            bottom: 90%;
+            left: -65px; 
+            width: 85px;
+            display: flex;
+            align-items: center;
+            z-index: 2;
+            transform: translateY(50%);
+        }
+        .vertical-bar-target-text {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-right: 2px;
+            background: transparent;
+            padding-right: 4px;
+            pointer-events: auto;
+            position: relative;
+            z-index: 10;
+        }
+        .vertical-bar-target-line {
+            flex-grow: 1;
+            border-bottom: 2px dashed var(--text-main);
+        }
+        .vertical-bar-container {
+            width: 100%;
+            height: 100%;
+            background-color: var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+        }
+        .vertical-bar-fill {
+            width: 100%;
+            background-color: var(--accent-green);
+            border-radius: 6px;
+            transition: height 0.4s ease, background-color 0.2s ease;
+        }
+
+        .chart-wrapper-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 100%;
+            max-height: 110px;
+            width: 110px;
+            pointer-events: auto;
+            flex-shrink: 0;
+        }
+        
+        .chart-container-large {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            min-height: 0;
+            pointer-events: auto;
+            margin-top: 8px;
+        }
+
+        table {
+            width: 100%;
+            height: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            pointer-events: auto;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 4px 8px;
+            border-bottom: 1px solid var(--border-color);
+            outline: none;
+            min-width: 20px;
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        td { font-weight: 600; color: var(--text-main); }
+        td:last-child, th:last-child { text-align: right; }
+
+        .dojo-metrics {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            background-color: rgba(0,0,0,0.02);
+            border-radius: 6px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .dojo-item {
+            text-align: center;
+        }
+
+        .dojo-divider {
+            width: 1px;
+            height: 40px;
+            background-color: var(--border-color);
+        }
+
+        .accident-inputs {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 8px;
+            pointer-events: auto;
+            flex-shrink: 0;
+        }
+
+        .accident-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: rgba(0,0,0,0.02);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            flex-grow: 1;
+        }
+
+        .accident-badge span {
+            color: var(--text-main);
+            font-weight: 800;
+            min-width: 16px;
+            text-align: center;
+            outline: none;
+            display: inline-block;
+        }
+
+        #colorTool {
+            display: none;
+            position: fixed;
+            top: 60px;
+            right: 32px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            width: 300px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .tool-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--vurgu-color);
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tool-section-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin: 16px 0 10px 0;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tool-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .tool-item-label {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+
+        input[type="color"] {
+            border: 1px solid #cbd5e1;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            padding: 0;
+            background: none;
+            flex-shrink: 0;
+        }
+
+        input[type="number"], .floating-input {
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 12px;
+            outline: none;
+        }
+
+        input[type="number"] {
+            width: 48px;
+            padding: 4px;
+        }
+
+        .floating-input {
+            position: fixed;
+            width: 40px;
+            padding: 2px;
+            display: none;
+            z-index: 1050;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            font-weight: bold;
+            color: var(--text-main);
+            border: 2px solid var(--vurgu-color);
+            border-radius: 6px;
+        }
+
+        .reset-btn {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: var(--text-main);
+            padding: 6px 12px;
+            font-size: 11px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 12px;
+            width: 100%;
+        }
+        
+        .reset-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .save-btn {
+            background: var(--accent-green);
+            border: none;
+            color: #ffffff;
+            padding: 8px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            margin-top: 12px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .save-btn:hover {
+            background: #047857;
+        }
+    </style>
 </head>
 <body>
 
-<div class="dashboard">
-  <div class="header">
-    <div style="display:flex; align-items:center; gap:15px;">
-      <img id="horse-logo" class="header-logo" src="horse-logo.png" alt="HORSE" />
-    </div>
-    <div class="header-title">HSSE</div>
-    <div class="header-location">Bursa</div>
-  </div>
+    <input type="text" id="floatingInput" class="floating-input" value="">
 
-  <div class="main" id="main-grid">
-    <!-- İŞ GÜVENLİĞİ SENİNLE BAŞLAR -->
-    <div class="slogan-block">
-      <img src="is-guvenligi.png" alt="İş Güvenliği Seninle Başlar" />
-    </div>
-
-    <!-- TOP HEADERS (row 1) -->
-    <div class="top-header accidents-top">Accidents (YTD)</div>
-    <div class="top-header days-top">
-      <div>Days</div>
-      <div style="font-size:0.88em;">Since Last</div>
-      <div style="font-size:0.88em;">FR2 Accident</div>
-    </div>
-    <div class="top-header fr1-top">FR1</div>
-    <div class="top-header fr2-top">FR2</div>
-    <div class="top-header ltcr-top">LTCR</div>
-
-    <!-- SUB HEADERS (row 2) -->
-    <div class="sub-header sub-f0">FR0</div>
-    <div class="sub-header sub-f1">FR1</div>
-    <div class="sub-header sub-f2">FR2</div>
-    <div class="sub-header sub-fr1-target">Target</div>
-    <div class="sub-header sub-fr1-mtd">MTD</div>
-    <div class="sub-header sub-fr2-target">Target</div>
-    <div class="sub-header sub-fr2-mtd">MTD</div>
-    <div class="sub-header sub-ltcr-target">Target</div>
-    <div class="sub-header sub-ltcr-mtd">MTD</div>
-  </div>
-</div>
-
-<div class="modal" id="edit-modal">
-  <div class="modal-content">
-    <h3 id="modal-title">Değer Düzenle</h3>
-    <input type="text" id="modal-input" />
-    <div class="modal-buttons">
-      <button class="btn-cancel" onclick="closeModal()">İptal</button>
-      <button class="btn-save" onclick="saveModal()">Kaydet</button>
-    </div>
-  </div>
-</div>
-
-<input type="file" id="file-input" accept="image/*" />
-
-<div class="connection-status" id="conn-status">Bağlanıyor...</div>
-
-<!-- FIREBASE MODULE -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyBLeZYzpRMknOhr6NkKS4k7MzVXrLdcOQc",
-    authDomain: "horse-iskaza.firebaseapp.com",
-    databaseURL: "https://horse-iskaza-default-rtdb.firebaseio.com",
-    projectId: "horse-iskaza",
-    storageBucket: "horse-iskaza.firebasestorage.app",
-    messagingSenderId: "82807394350",
-    appId: "1:82807394350:web:923b97e89096fb19c48fbf"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  window.firebase = { db, ref, set, onValue };
-  window.dispatchEvent(new Event('firebase-ready'));
-</script>
-
-<script>
-  // PLANT en üstte, fabrika geneli. Sıra: PLANT, MOTOR, VİTES KUTUSU, DÖKÜMHANE, BAKIM, LOJİSTİK
-  const departments = ['PLANT', 'MOTOR', 'VİTES KUTUSU', 'DÖKÜMHANE', 'BAKIM', 'LOJİSTİK'];
-
-  const defaultData = {
-    accidents: {
-      'PLANT':        { F0: 0, F1: 0, F2: 0, lastFR2Date: null },
-      'MOTOR':        { F0: 0, F1: 0, F2: 0, lastFR2Date: null },
-      'VİTES KUTUSU': { F0: 0, F1: 0, F2: 0, lastFR2Date: null },
-      'DÖKÜMHANE':    { F0: 0, F1: 0, F2: 0, lastFR2Date: null },
-      'BAKIM':        { F0: 0, F1: 0, F2: 0, lastFR2Date: null },
-      'LOJİSTİK':     { F0: 0, F1: 0, F2: 0, lastFR2Date: null },
-    },
-    metrics: {
-      fr1:  { target: '0,00', actual: '0,00' },
-      fr2:  { target: '0,97', actual: '0,00' },
-      ltcr: { target: '0,53', actual: '0,00' }
-    },
-    bulletinImage: null,
-    bulletinImageAspect: null
-  };
-
-  // Tarihten bu yana geçen günleri hesapla
-  function daysSince(dateStr) {
-    if (!dateStr) return 0;
-    const start = new Date(dateStr);
-    const today = new Date();
-    // Saat farklarını sıfırla, sadece tarih farkını al
-    start.setHours(0,0,0,0);
-    today.setHours(0,0,0,0);
-    const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
-    return Math.max(0, diff);
-  }
-
-  // PLANT için: PLANT dışındaki departmanların en güncel (en yakın) FR2 tarihini bul
-  function getLatestFR2Date() {
-    let latest = null;
-    departments.forEach(d => {
-      if (d === 'PLANT') return;
-      const dt = currentData.accidents[d]?.lastFR2Date;
-      if (!dt) return;
-      if (!latest || new Date(dt) > new Date(latest)) {
-        latest = dt;
-      }
-    });
-    return latest;
-  }
-
-  let currentData = JSON.parse(JSON.stringify(defaultData));
-  let firebaseReady = false;
-
-  function setConnectionStatus(status, type) {
-    const el = document.getElementById('conn-status');
-    el.textContent = status;
-    el.className = 'connection-status ' + (type || '');
-  }
-
-  function initFirebase() {
-    if (!window.firebase) return;
-    firebaseReady = true;
-
-    const fb = window.firebase;
-    const dataRef = fb.ref(fb.db, 'dashboard');
-
-    fb.onValue(dataRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        currentData = data;
-        if (!currentData.accidents) currentData.accidents = {};
-        departments.forEach(d => {
-          if (!currentData.accidents[d]) {
-            currentData.accidents[d] = { F0: 0, F1: 0, F2: 0, lastFR2Date: null };
-          }
-          // Eski 'days' alanını lastFR2Date'e migrate et
-          if (currentData.accidents[d].days !== undefined && currentData.accidents[d].lastFR2Date === undefined) {
-            const days = currentData.accidents[d].days || 0;
-            const date = new Date();
-            date.setDate(date.getDate() - days);
-            currentData.accidents[d].lastFR2Date = date.toISOString().split('T')[0];
-            delete currentData.accidents[d].days;
-          }
-        });
-        if (!currentData.metrics) currentData.metrics = defaultData.metrics;
-        if (!currentData.metrics.fr1) currentData.metrics.fr1 = { target: '0,00', actual: '0,00' };
-        renderGrid();
-        setConnectionStatus('🔵 Cloud bağlı', 'connected');
-      } else {
-        fb.set(dataRef, currentData);
-        renderGrid();
-        setConnectionStatus('🔵 Cloud bağlı (yeni)', 'connected');
-      }
-    }, (error) => {
-      console.error('Firebase read error:', error);
-      setConnectionStatus('⚠ Bağlantı hatası', 'error');
-      renderGrid();
-    });
-  }
-
-  function saveData() {
-    if (!firebaseReady || !window.firebase) return;
-    const fb = window.firebase;
-    fb.set(fb.ref(fb.db, 'dashboard'), currentData)
-      .catch(err => {
-        console.error('Save error:', err);
-        setConnectionStatus('⚠ Kaydetme hatası', 'error');
-      });
-  }
-
-  window.addEventListener('firebase-ready', initFirebase);
-  if (window.firebase) initFirebase();
-
-  function renderGrid() {
-    const grid = document.getElementById('main-grid');
-    const existing = grid.querySelectorAll('.dynamic-row');
-    existing.forEach(el => el.remove());
-
-    // Departments start at grid row 3 (after top-header + sub-header rows)
-    departments.forEach((dept, idx) => {
-      const row = idx + 3;
-      const data = currentData.accidents[dept] || { F0: 0, F1: 0, F2: 0, lastFR2Date: null };
-
-      // Dept label
-      const label = document.createElement('div');
-      label.className = 'dept-label dynamic-row';
-      label.style.gridColumn = '1 / 2';
-      label.style.gridRow = `${row} / ${row + 1}`;
-      label.textContent = dept;
-      grid.appendChild(label);
-
-      // F0, F1, F2
-      ['F0', 'F1', 'F2'].forEach((f, fIdx) => {
-        const cell = document.createElement('div');
-        const val = data[f] || 0;
-        cell.className = `data-cell dynamic-row ${val === 0 ? 'zero' : 'nonzero'}`;
-        cell.style.gridColumn = `${2 + fIdx} / ${3 + fIdx}`;
-        cell.style.gridRow = `${row} / ${row + 1}`;
-        cell.textContent = val;
-        cell.onclick = () => editAccident(dept, f);
-        grid.appendChild(cell);
-      });
-
-      // PLANT için: diğer departmanların en son FR2 tarihini otomatik bul
-      // Diğer departmanlar için: kendi lastFR2Date'ini kullan
-      let effectiveDate;
-      if (dept === 'PLANT') {
-        effectiveDate = getLatestFR2Date();
-      } else {
-        effectiveDate = data.lastFR2Date;
-      }
-      const days = daysSince(effectiveDate);
-
-      const daysCell = document.createElement('div');
-      daysCell.className = `days-cell dynamic-row ${(data.F2 || 0) === 0 ? 'good' : 'bad'}`;
-      daysCell.style.gridColumn = '6 / 7';
-      daysCell.style.gridRow = `${row} / ${row + 1}`;
-      daysCell.textContent = days;
-      if (dept === 'PLANT') {
-        // PLANT tıklanamaz - otomatik hesaplanıyor
-        daysCell.style.cursor = 'not-allowed';
-        daysCell.title = 'Diğer departmanların en güncel FR2 tarihinden otomatik hesaplanır';
-      } else {
-        daysCell.onclick = () => editDays(dept);
-      }
-      grid.appendChild(daysCell);
-    });
-
-    // FR1 metric cells (PLANT row, cols 8-9)
-    const fr1Target = document.createElement('div');
-    fr1Target.className = 'metric-cell target dynamic-row';
-    fr1Target.style.gridColumn = '8 / 9';
-    fr1Target.style.gridRow = '3 / 4';
-    fr1Target.textContent = currentData.metrics.fr1.target;
-    fr1Target.onclick = () => editMetric('fr1', 'target');
-    grid.appendChild(fr1Target);
-
-    const fr1Mtd = document.createElement('div');
-    fr1Mtd.className = 'metric-cell actual-good dynamic-row';
-    fr1Mtd.style.gridColumn = '9 / 10';
-    fr1Mtd.style.gridRow = '3 / 4';
-    fr1Mtd.textContent = currentData.metrics.fr1.actual;
-    fr1Mtd.onclick = () => editMetric('fr1', 'actual');
-    grid.appendChild(fr1Mtd);
-
-    // FR2 metric cells (PLANT row, cols 11-12)
-    const fr2Target = document.createElement('div');
-    fr2Target.className = 'metric-cell target dynamic-row';
-    fr2Target.style.gridColumn = '11 / 12';
-    fr2Target.style.gridRow = '3 / 4';
-    fr2Target.textContent = currentData.metrics.fr2.target;
-    fr2Target.onclick = () => editMetric('fr2', 'target');
-    grid.appendChild(fr2Target);
-
-    const fr2Mtd = document.createElement('div');
-    fr2Mtd.className = 'metric-cell actual-good dynamic-row';
-    fr2Mtd.style.gridColumn = '12 / 13';
-    fr2Mtd.style.gridRow = '3 / 4';
-    fr2Mtd.textContent = currentData.metrics.fr2.actual;
-    fr2Mtd.onclick = () => editMetric('fr2', 'actual');
-    grid.appendChild(fr2Mtd);
-
-    // LTCR metric cells (PLANT row, cols 14-15)
-    const ltcrTarget = document.createElement('div');
-    ltcrTarget.className = 'metric-cell target dynamic-row';
-    ltcrTarget.style.gridColumn = '14 / 15';
-    ltcrTarget.style.gridRow = '3 / 4';
-    ltcrTarget.textContent = currentData.metrics.ltcr.target;
-    ltcrTarget.onclick = () => editMetric('ltcr', 'target');
-    grid.appendChild(ltcrTarget);
-
-    const ltcrMtd = document.createElement('div');
-    ltcrMtd.className = 'metric-cell actual-good dynamic-row';
-    ltcrMtd.style.gridColumn = '15 / 16';
-    ltcrMtd.style.gridRow = '3 / 4';
-    ltcrMtd.textContent = currentData.metrics.ltcr.actual;
-    ltcrMtd.onclick = () => editMetric('ltcr', 'actual');
-    grid.appendChild(ltcrMtd);
-
-    // Bulletin - PLANT satırının altından (row 4) tüm 6 dept satırının sonuna (row 9) kadar
-    const bulletin = document.createElement('div');
-    const hasImage = !!currentData.bulletinImage;
-    bulletin.className = 'bulletin dynamic-row' + (hasImage ? ' has-image' : '');
-    bulletin.id = 'bulletin-area';
-    bulletin.style.gridColumn = '8 / 16'; // FR1 start to LTCR end
-    bulletin.style.gridRow = '4 / 9';     // PLANT'in altından son departman satırının sonuna
-
-    bulletin.innerHTML = `
-      <div class="bulletin-controls">
-        <button class="bulletin-btn" onclick="event.stopPropagation(); document.getElementById('file-input').click();">📁 Yükle</button>
-        <button class="bulletin-btn remove" onclick="event.stopPropagation(); removeBulletinImage();">✕ Kaldır</button>
-      </div>
-      <div class="upload-status" id="upload-status"></div>
-      ${hasImage
-        ? `<img src="${currentData.bulletinImage}" alt="Sağlık Bülteni" />`
-        : `<div class="bulletin-placeholder">
-            <div class="icon">📋</div>
-            <div class="title">SAĞLIK BÜLTENİ</div>
-            <div class="desc">
-              Görseli buraya sürükleyin<br>
-              veya yapıştırın (Ctrl+V)<br>
-              ya da yüklemek için tıklayın
+    <div class="header">
+        <div class="header-left">
+            <div class="brand-logo">
+                <img src="horse.png" style="height: 45px; margin-right: 10px;" alt="Logo">
+                <span contenteditable="true" id="headerTitle">| HSE</span>
             </div>
-          </div>`
-      }
-    `;
-    bulletin.onclick = () => {
-      if (!currentData.bulletinImage) {
-        document.getElementById('file-input').click();
-      }
-    };
-    grid.appendChild(bulletin);
+        </div>
+        <div class="header-right">
+            <i class="fas fa-cog" id="settingsBtn"></i>
+            <div class="date" contenteditable="true" id="headerDate">&nbsp;</div>
+        </div>
+    </div>
 
-    setupBulletinHandlers();
-  }
+    <div id="colorTool" style="display: none;">
+        <div class="tool-header">
+            DASHBOARD AYARLARI
+            <i class="fas fa-times" id="closeTool" style="cursor:pointer; color: var(--text-muted);"></i>
+        </div>
+        <div class="tool-section-title">GENEL AYARLAR</div>
+        <div class="tool-item"><span class="tool-item-label">Sayfa Arka Planı:</span> <input type="color" id="bgColorPicker" value="#f1f5f9"></div>
+        <div class="tool-item"><span class="tool-item-label">Genel Ana Metin Rengi:</span> <input type="color" id="textMainPicker" value="#000000"></div>
+        <div class="tool-item"><span class="tool-item-label">Genel Silik Metin Rengi:</span> <input type="color" id="textMutedGlobalPicker" value="#000000"></div>
+        <div class="tool-item"><span class="tool-item-label">Tema/Vurgu Rengi:</span> <input type="color" id="accentColorPicker" value="#004279"></div>
+        
+        <div class="tool-section-title">
+            KART AYARLARI 
+            <span id="selectedCardLabel" style="color: var(--vurgu-color); text-transform: none; font-weight: 600; margin-left: auto;">Tümü</span>
+        </div>
+        <div class="tool-item"><span class="tool-item-label">Kart Arka Planı:</span> <input type="color" id="cardBgPicker" value="#ffffff"></div>
+        <div class="tool-item"><span class="tool-item-label">Kart Ana Metin Rengi:</span> <input type="color" id="cardTextMainPicker" value="#0f172a"></div>
+        <div class="tool-item"><span class="tool-item-label">Kart Silik Metin Rengi:</span> <input type="color" id="cardTextMutedPicker" value="#64748b"></div>
+        <div class="tool-item"><span class="tool-item-label">İkon Rengi:</span> <input type="color" id="iconColorPicker" value="#0b2941"></div>
+        <div class="tool-item"><span class="tool-item-label">Kenarlık Rengi:</span> <input type="color" id="borderColorPicker" value="#e2e8f0"></div>
+        <div class="tool-item"><span class="tool-item-label">Kenarlık Kalınlığı (px):</span> <input type="number" id="borderWidthPicker" value="1" min="0" max="15"></div>
+        <div class="tool-item"><span class="tool-item-label">Kenarlık Ovalliği (px):</span> <input type="number" id="borderRadiusPicker" value="10" min="0" max="50"></div>
+        
+        <div>
+            <button class="reset-btn" id="resetSelectionBtn">Seçimi Temizle</button>
+            <button class="save-btn" id="saveBtn"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button>
+        </div>
+    </div>
 
-  let modalContext = null;
+    <div class="grid-container">
+        
+        <div class="card col-4" id="card_kaza" style="outline: none;">
+            <div class="card-header">
+    <div class="card-header-left">
+        <div class="card-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="card-title" contenteditable="true" id="titleKaza">KATEGORİSEL İŞ KAZALARI</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px; pointer-events: auto;">
+        <span contenteditable="true" id="kazasizGunSayi" style="font-size: 22px; font-weight: 800; color: var(--vurgu-color); outline: none; min-width: 20px; display: inline-block;">&nbsp;</span>
+        <span contenteditable="true" id="kazasizGunLabel" style="font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; outline: none;">Gün Kazasız</span>
+    </div>
+</div>
+            <div class="card-content-area">
+                <div class="accident-inputs">
+                    <div class="accident-badge">FR0: <span id="valFR0" contenteditable="true">&nbsp;</span></div>
+                    <div class="accident-badge">FR1: <span id="valFR1" contenteditable="true">&nbsp;</span></div>
+                    <div class="accident-badge">FR2: <span id="valFR2" contenteditable="true">&nbsp;</span></div>
+                    <div class="accident-badge">RK: <span id="valRK" contenteditable="true">&nbsp;</span></div>
+                </div>
+                <div class="chart-container-large"><canvas id="kazaKategoriChart"></canvas></div>
+            </div>
+        </div>
 
-  window.editAccident = function(dept, type) {
-    modalContext = { kind: 'accident', dept, type };
-    const displayType = 'FR' + type.replace('F', '');
-    document.getElementById('modal-title').textContent = `${dept} - ${displayType} kaza sayısı`;
-    document.getElementById('modal-input').value = currentData.accidents[dept][type];
-    document.getElementById('modal-input').type = 'number';
-    showModal();
-  };
+        <div class="card col-4" id="card_ltcr" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
+                    <div class="card-title" contenteditable="true" id="titleLtcr">LTCR</div>
+                </div>
+                <div class="card-subtitle-hint"></div>
+            </div>
+            <div class="card-content-area" id="ltcrContainer">
+                <div class="chart-container-large" style="margin-top: 0;">
+                    <canvas id="ltcrChart"></canvas>
+                </div>
+            </div>
+        </div>
 
-  window.editDays = function(dept) {
-    modalContext = { kind: 'days', dept };
-    document.getElementById('modal-title').textContent = `${dept} - Son FR2 kazası tarihi`;
-    const current = currentData.accidents[dept].lastFR2Date;
-    // Tarih yoksa bugünü göster
-    document.getElementById('modal-input').value = current || new Date().toISOString().split('T')[0];
-    document.getElementById('modal-input').type = 'date';
-    showModal();
-  };
+        <div class="card col-4" id="card_fr2" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-chart-area"></i></div>
+                    <div class="card-title" contenteditable="true" id="titleFr2">FR2</div>
+                </div>
+            </div>
+            <div class="card-content-area" id="fr2Container">
+                <div class="chart-container-large" style="margin-top: 0;">
+                    <canvas id="fr2Chart"></canvas>
+                </div>
+            </div>
+        </div>
 
-  window.editMetric = function(metric, field) {
-    modalContext = { kind: 'metric', metric, field };
-    const labelMap = { fr1: 'FR1', fr2: 'FR2', ltcr: 'LTCR' };
-    const fieldMap = { target: 'Target', actual: 'MTD (Mevcut)' };
-    document.getElementById('modal-title').textContent = `${labelMap[metric]} - ${fieldMap[field]}`;
-    document.getElementById('modal-input').value = currentData.metrics[metric][field];
-    document.getElementById('modal-input').type = 'text';
-    showModal();
-  };
+        <div class="card col-3" id="card_posta" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                    <div class="card-title" contenteditable="true" id="titlePosta">POSTA RİSK DEĞERLENDİRME</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <table style="width: 70%; margin: 0 auto;">
+                    <tbody><tr><th>Departman</th><th>İlerleme</th></tr>
+                    <tr><td contenteditable="true" id="postaDep1">VK</td><td contenteditable="true" id="postaVal1">&nbsp;</td></tr>
+                    <tr><td contenteditable="true" id="postaDep2">Motor</td><td contenteditable="true" id="postaVal2">&nbsp;</td></tr>
+                    <tr><td contenteditable="true" id="postaDep3">Döküm</td><td contenteditable="true" id="postaVal3">&nbsp;</td></tr>
+                    <tr><td contenteditable="true" id="postaDep4">Lojistik</td><td contenteditable="true" id="postaVal4">&nbsp;</td></tr>
+                </tbody></table>
+            </div>
+        </div>
 
-  function showModal() {
-    document.getElementById('edit-modal').classList.add('show');
-    setTimeout(() => document.getElementById('modal-input').focus(), 50);
-  }
+        <div class="card col-3" id="card_ca" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-list-check"></i></div>
+                    <div class="card-title" contenteditable="true" id="titleCa">CA HAFTALIK ANİMASYON TAKİBİ</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <table style="width: 80%; margin: 0 auto;">
+                    <tbody><tr><th>Atölye</th><th>Atölye Sayısı</th><th>Devreye Alan</th></tr>
+                    <tr><td contenteditable="true" id="caDep1">VK</td><td contenteditable="true" id="caVal1_1">&nbsp;</td><td contenteditable="true" id="caVal1_2">&nbsp;</td></tr>
+                    <tr><td contenteditable="true" id="caDep2">Motor</td><td contenteditable="true" id="caVal2_1">&nbsp;</td><td contenteditable="true" id="caVal2_2">&nbsp;</td></tr>
+                    <tr><td contenteditable="true" id="caDep3">Döküm</td><td contenteditable="true" id="caVal3_1">&nbsp;</td><td contenteditable="true" id="caVal3_2">&nbsp;</td></tr>
+                    <tr><td contenteditable="true" id="caDep4">Lojistik</td><td contenteditable="true" id="caVal4_1">&nbsp;</td><td contenteditable="true" id="caVal4_2">&nbsp;</td></tr>
+                </tbody></table>
+            </div>
+        </div>
 
-  window.closeModal = function() {
-    document.getElementById('edit-modal').classList.remove('show');
-    modalContext = null;
-  };
+        <div class="card col-2" id="card_loto" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-qrcode"></i></div>
+                    <div class="card-title" contenteditable="true" id="titleLoto">LOTO FOS QR</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <table style="width: 100%; margin: 0 auto; font-size: 11px;">
+                    <tbody>
+                        <tr><th>Dep.</th><th style="text-align: center;">Atölye</th><th style="text-align: right;">Oran</th></tr>
+                        <tr><td contenteditable="true" id="lotoDep1">Döküm</td><td contenteditable="true" class="loto-fraction" id="lotoFrac1" style="text-align: center;">&nbsp;</td><td contenteditable="true" id="lotoPerc1" style="text-align: right;">&nbsp;</td></tr>
+                        <tr><td contenteditable="true" id="lotoDep2">Motor</td><td contenteditable="true" class="loto-fraction" id="lotoFrac2" style="text-align: center;">&nbsp;</td><td contenteditable="true" id="lotoPerc2" style="text-align: right;">&nbsp;</td></tr>
+                        <tr><td contenteditable="true" id="lotoDep3">VK</td><td contenteditable="true" class="loto-fraction" id="lotoFrac3" style="text-align: center;">&nbsp;</td><td contenteditable="true" id="lotoPerc3" style="text-align: right;">&nbsp;</td></tr>
+                        <tr><td contenteditable="true" id="lotoDep4">Loj.</td><td contenteditable="true" class="loto-fraction" id="lotoFrac4" style="text-align: center;">&nbsp;</td><td contenteditable="true" id="lotoPerc4" style="text-align: right;">&nbsp;</td></tr>                       
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-  window.saveModal = function() {
-    if (!modalContext) return;
-    const val = document.getElementById('modal-input').value;
+        <div class="card col-2" id="card_dws" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-bars-progress"></i></div>
+                    <div class="card-title" contenteditable="true" id="titleDws" style="font-size: 12.5px;">HAT BAZINDA DWS</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <div style="width: 100%; margin: 0 auto; padding-left: 8px;">
+                    <div class="metric-large" id="dwsScore" contenteditable="true" style="font-size: 35px;">&nbsp;</div>
+                    <div class="dws-status" style="font-size: 15px; flex-wrap: wrap; gap: 4px;">
+                        <span contenteditable="true" id="dwsOk">&nbsp;</span> <span class="dws-status-label" style="font-size: 11px;">OK</span>
+                        <span class="dws-separator" style="margin: 0 2px;">|</span>
+                        <span contenteditable="true" id="dwsDevam">&nbsp;</span> <span class="dws-status-label" style="font-size: 11px;">DEVAM</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div id="dwsBar" class="progress-bar-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    if (modalContext.kind === 'accident') {
-      currentData.accidents[modalContext.dept][modalContext.type] = parseInt(val) || 0;
-    } else if (modalContext.kind === 'days') {
-      currentData.accidents[modalContext.dept].lastFR2Date = val || null;
-    } else if (modalContext.kind === 'metric') {
-      currentData.metrics[modalContext.metric][modalContext.field] = val;
-    }
+        <div class="card col-2" id="card_hstool" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+                    <div class="card-title" contenteditable="true" id="titleHsTool" style="font-size: 10px;">HS KRİTERLERİ</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <div class="dojo-metrics" style="padding: 8px; flex-direction: column; align-items: flex-start; gap: 8px; background: none; border: none;">
+                    <div class="dojo-item" style="text-align: left; width: 100%;">
+                        <div class="metric-large" id="hsToolScore" contenteditable="true" style="font-size: 24px;">&nbsp;</div>
+                        <div class="metric-sub" contenteditable="true" id="hsToolLabel" style="margin-top: 0px;">Skor</div>
+                    </div>
+                    <div class="dojo-divider" style="height: 1px; width: 100%;"></div>
+                    <div class="dojo-item" style="text-align: left; width: 100%;">
+                        <div class="metric-large" id="hsYayginlasma" contenteditable="true" style="font-size: 24px;">&nbsp;</div>
+                        <div class="metric-sub" contenteditable="true" id="hsYayginlasmaLabel" style="margin-top: 0px;">Hedef: %85</div>
+                        <div class="progress-bar-bg" style="margin-top: 4px; height: 5px;">
+                            <div id="hsYayginlasmaBar" class="progress-bar-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    saveData();
-    renderGrid();
-    closeModal();
-  };
+        <div class="card col-3" id="card_santiye" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-helmet-safety"></i></div>
+                    <div class="card-title" contenteditable="true" id="titleSantiye" style="font-size: 13px;">AKTİF ŞANTİYE SAYISI & HS CHECK</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <div class="dojo-metrics" style="padding: 0; background: none; border: none;">
+                    <div class="dojo-item">
+                        <div class="metric-large" contenteditable="true" id="santiyeVal1" style="font-size: 42px;">&nbsp;</div>
+                        <div class="metric-sub" contenteditable="true" id="santiyeLabel1" style="font-size: 13px;">Açık Şantiye</div>
+                    </div>
+                    <div class="dojo-divider"></div>
+                    <div class="dojo-item">
+                        <div class="metric-large" contenteditable="true" id="santiyeVal2" style="font-size: 42px;">&nbsp;</div>
+                        <div class="metric-sub" contenteditable="true" id="santiyeLabel2" style="font-size: 13px;">HS Check</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-  document.getElementById('modal-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') saveModal();
-    if (e.key === 'Escape') closeModal();
-  });
+        <div class="card col-3" id="card_yasal" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-file-shield"></i></div>
+                    <div class="card-title" contenteditable="true" id="titleYasal" style="font-size: 13px;">YASAL İŞ GÜVENLİĞi eğitimi</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <div class="chart-wrapper-row">
+                    <div style="pointer-events: auto;">
+                        <div class="metric-large" id="yasalScore" contenteditable="true" style="font-size: 42px;">&nbsp;</div>
+                        <div class="metric-sub" contenteditable="true" id="yasalLabel" style="font-size: 13px;">Tamamlanma Oranı</div>
+                    </div>
+                    <div class="chart-container"><canvas id="yasalEgitimChart"></canvas></div>
+                </div>
+            </div>
+        </div>
 
-  function setupBulletinHandlers() {
-    const bulletin = document.getElementById('bulletin-area');
-    if (!bulletin) return;
+        <div class="card col-3" id="card_dojo" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-person-chalkboard"></i></div>
+                    <div class="card-title" contenteditable="true" id="titleDojo" style="font-size: 13px;">RİSK FARKINDALIĞI semineri</div>
+                </div>
+            </div>
+            <div class="card-content-area">
+                <div class="dojo-metrics">
+                    <div class="dojo-item">
+                        <div class="metric-large" contenteditable="true" id="dojoVal1" style="font-size: 42px;">&nbsp;</div>
+                        <div class="metric-sub" contenteditable="true" id="dojoLabel1" style="font-size: 13px;">Seans Yapıldı</div>
+                    </div>
+                    <div class="dojo-divider"></div>
+                    <div class="dojo-item">
+                        <div class="metric-large" contenteditable="true" id="dojoVal2" style="font-size: 42px;">&nbsp;</div>
+                        <div class="metric-sub" contenteditable="true" id="dojoLabel2" style="font-size: 13px;">Kişiye Verildi</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    bulletin.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      bulletin.classList.add('dragover');
-    });
-    bulletin.addEventListener('dragleave', () => {
-      bulletin.classList.remove('dragover');
-    });
-    bulletin.addEventListener('drop', (e) => {
-      e.preventDefault();
-      bulletin.classList.remove('dragover');
-      const file = e.dataTransfer.files[0];
-      if (file && file.type.startsWith('image/')) {
-        processImageFile(file);
-      }
-    });
-  }
+        <div class="card col-3" id="card_intenseye" style="outline: none;">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon"><i class="fa-solid fa-camera-retro"></i></div>
+                    <div class="card-title" contenteditable="true" id="titleIntenseye" style="font-size: 13px;">INTENSEYE GÜVENLİK PUANI</div>
+                </div>
+            </div>
+            <div class="card-content-area" style="flex-direction: row; justify-content: space-between; align-items: center;">
+                <div>
+                    <div class="metric-large" id="intenseyeScore" contenteditable="true" style="font-size: 42px;">&nbsp;</div>
+                    <div class="metric-sub" contenteditable="true" id="intenseyeLabel" style="font-size: 13px;">&nbsp;</div>
+                </div>
+                <div class="vertical-bar-wrapper-container">
+                    <div class="vertical-bar-target-group">
+                        <span class="vertical-bar-target-text" style="font-size: 12px;">Hedef %90</span>
+                        <div class="vertical-bar-target-line"></div>
+                    </div>
+                    <div class="vertical-bar-container">
+                        <div id="intenseyeBar" class="vertical-bar-fill" style="height: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-  document.getElementById('file-input').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      processImageFile(file);
-    }
-    e.target.value = '';
-  });
+    </div>
 
-  document.addEventListener('paste', (e) => {
-    const items = e.clipboardData?.items;
-    if (!items) return;
-    for (const item of items) {
-      if (item.type.startsWith('image/')) {
-        const file = item.getAsFile();
-        if (file) {
-          processImageFile(file);
-          e.preventDefault();
-          break;
-        }
-      }
-    }
-  });
-
-  async function processImageFile(file) {
-    showUploadStatus('Yükleniyor...');
-
-    if (!firebaseReady || !window.firebase) {
-      showUploadStatus('Cloud bağlantısı yok', 2000);
-      return;
-    }
-
-    try {
-      const result = await compressImage(file, 1600, 0.85);
-      currentData.bulletinImage = result.dataUrl;
-      currentData.bulletinImageAspect = result.aspect;
-      saveData();
-      renderGrid();
-      showUploadStatus('Yüklendi ✓', 1500);
-    } catch(err) {
-      console.error('Upload error:', err);
-      showUploadStatus('Hata: ' + err.message, 3000);
-    }
-  }
-
-  function compressImage(file, maxWidth, quality) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          let w = img.width;
-          let h = img.height;
-          const originalAspect = w / h;
-          if (w > maxWidth) {
-            h = (h * maxWidth) / w;
-            w = maxWidth;
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
-
-          let q = quality;
-          let dataUrl = canvas.toDataURL('image/jpeg', q);
-          while (dataUrl.length > 700 * 1024 && q > 0.3) {
-            q -= 0.1;
-            dataUrl = canvas.toDataURL('image/jpeg', q);
-          }
-          resolve({ dataUrl, aspect: originalAspect });
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDl7tvu_0TfqTg6G1NwgQxwbaPTcQy8fbE",
+            authDomain: "horse-hse-dashboard.firebaseapp.com",
+            databaseURL: "https://horse-hse-dashboard-default-rtdb.firebaseio.com",
+            projectId: "horse-hse-dashboard",
+            storageBucket: "horse-hse-dashboard.firebasestorage.app",
+            messagingSenderId: "405753934174",
+            appId: "1:405753934174:web:b88677bc79888279bd5fcf"
         };
-        img.onerror = () => reject(new Error('Görsel okunamadı'));
-        img.src = e.target.result;
-      };
-      reader.onerror = () => reject(new Error('Dosya okunamadı'));
-      reader.readAsDataURL(file);
-    });
-  }
 
-  window.removeBulletinImage = async function() {
-    if (!confirm('Bülten görselini kaldırmak istediğinize emin misiniz?')) return;
-    currentData.bulletinImage = null;
-    currentData.bulletinImageAspect = null;
-    saveData();
-    renderGrid();
-  };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-  function showUploadStatus(msg, hideAfter) {
-    const status = document.getElementById('upload-status');
-    if (!status) return;
-    status.textContent = msg;
-    status.classList.add('show');
-    if (hideAfter) {
-      setTimeout(() => status.classList.remove('show'), hideAfter);
-    }
-  }
+        const settingsBtn = document.getElementById('settingsBtn');
+        const colorTool = document.getElementById('colorTool');
+        const closeTool = document.getElementById('closeTool');
+        const root = document.querySelector(':root');
 
-  document.getElementById('horse-logo').onerror = function() {
-    this.style.display = 'none';
-    this.parentElement.innerHTML = '<div style="font-size:clamp(18px,2vw,28px); font-weight:900; letter-spacing:6px; color:white;">HORSE</div>';
-  };
+        const cards = document.querySelectorAll('.card');
+        const selectedCardLabel = document.getElementById('selectedCardLabel');
+        const resetSelectionBtn = document.getElementById('resetSelectionBtn');
+        const saveBtn = document.getElementById('saveBtn');
 
-  renderGrid();
-  setConnectionStatus('Bağlanıyor...');
+        const bgColorPicker = document.getElementById('bgColorPicker');
+        const textMainPicker = document.getElementById('textMainPicker');
+        const textMutedGlobalPicker = document.getElementById('textMutedGlobalPicker');
+        const accentColorPicker = document.getElementById('accentColorPicker');
 
-  // Sayfa açık kaldığında günler otomatik güncellensin
-  // Her dakika kontrol et - gün değiştiyse yeniden çiz
-  let lastRenderedDay = new Date().toDateString();
-  setInterval(() => {
-    const currentDay = new Date().toDateString();
-    if (currentDay !== lastRenderedDay) {
-      lastRenderedDay = currentDay;
-      renderGrid();
-    }
-  }, 60 * 1000);
+        const cardBgPicker = document.getElementById('cardBgPicker');
+        const cardTextMainPicker = document.getElementById('cardTextMainPicker');
+        const cardTextMutedPicker = document.getElementById('cardTextMutedPicker');
+        const iconColorPicker = document.getElementById('iconColorPicker');
+        const borderColorPicker = document.getElementById('borderColorPicker');
+        const borderWidthPicker = document.getElementById('borderWidthPicker');
+        const borderRadiusPicker = document.getElementById('borderRadiusPicker');
 
-  document.getElementById('edit-modal').addEventListener('click', (e) => {
-    if (e.target.id === 'edit-modal') closeModal();
-  });
-</script>
+        let selectedCard = null;
 
-</body>
-</html>
+        const selectorsMainText = '.metric-large, td, .dws-status > span, .accident-badge > span';
+        const selectorsMutedText = '.card-title, .metric-sub, th, .dws-status-label';
+
+        Chart.defaults.font.family = "'Poppins', sans-serif";
+        Chart.defaults.color = getComputedStyle(root).getPropertyValue('--text-muted').trim();
+
+        const customDataLabels = {
+            id: 'customDataLabels',
+            afterDatasetsDraw(chart, args, pluginOptions) {
+                const { ctx, data } = chart;
+                ctx.save();
+                if (chart.canvas.id === 'ltcrChart' || chart.canvas.id === 'fr2Chart') {
+                    ctx.font = 'bold 8px Poppins';
+                } else {
+                    ctx.font = 'bold 10px Poppins';
+                }
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                
+                data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    if (!meta.hidden && dataset.label !== 'Target') {
+                        meta.data.forEach((element, index) => {
+                            const value = dataset.data[index];
+                            if (value !== null && value !== undefined && !isNaN(value)) {
+                                ctx.fillStyle = getComputedStyle(root).getPropertyValue('--text-main').trim();
+                                ctx.fillText(value.toString().replace('.', ','), element.x, element.y - 6);
+                            }
+                        });
+                    }
+                });
+                ctx.restore();
+            }
+        };
+
+        Chart.register(customDataLabels);
+
+        const doughnutOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: { legend: { display: false }, tooltip: { enabled: false }, customDataLabels: false },
+            animation: { duration: 0 },
+            layout: { padding: 0 }
+        };
+
+        let yasalChart = new Chart(document.getElementById('yasalEgitimChart'), { type: 'doughnut', data: { datasets: [{ data: [0, 100], backgroundColor: ['#059669', '#f1f5f9'], borderWidth: 0 }] }, options: doughnutOptions });
+
+        let kazaChart = new Chart(document.getElementById('kazaKategoriChart'), {
+            type: 'bar',
+            data: {
+                labels: ['FR0', 'FR1', 'FR2', 'RK'],
+                datasets: [{
+                    data: [0, 0, 0, 0],
+                    backgroundColor: [getComputedStyle(root).getPropertyValue('--vurgu-color').trim(), '#d97706', '#dc2626', '#2563eb'],
+                    borderRadius: 4,
+                    borderWidth: 0,
+                    barThickness: 24
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false }, customDataLabels: false },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { color: Chart.defaults.color, stepSize: 1 } },
+                    x: { grid: { display: false }, border: { display: false }, ticks: { font: { weight: 'bold' }, color: Chart.defaults.color } }
+                },
+                animation: { duration: 0 }
+            }
+        });
+
+        let ltcrChart = new Chart(document.getElementById('ltcrChart'), {
+            type: 'line',
+            data: {
+                labels: ['2025', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+                datasets: [
+                    { type: 'bar', label: 'Realisation', data: [0.5, 0, 0, null, null, null, null, null, null, null, null, null, null], backgroundColor: '#f97316', barPercentage: 0.5 },
+                    { type: 'line', label: 'Commitment', data: [null, 7.14, 3.33, 2.25, 1.67, 1.33, 1.11, 0.95, 0.84, 0.73, 0.65, 0.58, 0.53], borderColor: '#65a30d', borderWidth: 2, tension: 0.1, pointRadius: 0 },
+                    { type: 'line', label: 'Target', data: [0.5, 6.5, 3.0, 2.1, 1.5, 1.2, 1.0, 0.9, 0.8, 0.7, 0.6, 0.55, 0.53], borderColor: '#1e3a8a', borderWidth: 2, tension: 0.1, pointRadius: 0 }
+                ]
+            },
+           options: {
+                responsive: true, maintainAspectRatio: false, layout: { padding: { top: 0, right: 0, left: 0, bottom: 0 } },
+                plugins: { legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 6, boxHeight: 6, useBorderRadius: true, borderRadius: 2, font: { size: 8 }, padding: 5 } }, tooltip: { enabled: false } },
+                scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { color: Chart.defaults.color, font: {size: 8} }, max: 8 }, x: { grid: { display: false }, border: { display: false }, ticks: { color: Chart.defaults.color, font: {size: 8}, maxRotation: 45, minRotation: 45 } } },
+                animation: { duration: 0 }
+            }
+        });
+
+        let fr2Chart = new Chart(document.getElementById('fr2Chart'), {
+            type: 'line',
+            data: {
+                labels: ['2023', '2024', '2025', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+                datasets: [
+                    { type: 'bar', label: 'Realisation', data: [0.96, 0.83, null, 0, 0, 0, null, null, null, null, null, null, null, null, null], backgroundColor: '#f97316', barPercentage: 0.5 },
+                    { type: 'line', label: 'Commitment', data: [0.52, 0.52, 1.03, null, null, null, null, null, null, 1.02, 1.05, 1.01, 1.00, 0.98, 0.97], borderColor: '#fbbf24', borderWidth: 2, tension: 0.1, pointRadius: 0 },
+                    { type: 'line', label: 'Target', data: [0, 0, 1.03, 0, 0, 0, 0, 0, 0, 1.02, 1.05, 1.01, 1.00, 0.98, 0.97], borderColor: '#78350f', borderWidth: 2, tension: 0.1, pointRadius: 0 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, layout: { padding: { top: 0, right: 0, left: 0, bottom: 0 } },
+                plugins: { legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 6, boxHeight: 6, useBorderRadius: true, borderRadius: 2, font: { size: 8 }, padding: 5 } }, tooltip: { enabled: false } },
+                scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { color: Chart.defaults.color, font: {size: 8} }, max: 1.5 }, x: { grid: { display: false }, border: { display: false }, ticks: { color: Chart.defaults.color, font: {size: 8}, maxRotation: 45, minRotation: 45 } } },
+                animation: { duration: 0 }
+            }
+        });
+
+        // ----- ÇOK DAHA İYİ TIKLAMA VE DÜZENLEME MANTIĞI -----
+        const floatInput = document.getElementById('floatingInput');
+        let editDatasetIndex = -1;
+        let editDataIndex = -1;
+        let activeChart = null;
+
+        function handleChartClick(evt, chartInstance) {
+            // mode: 'index' ve intersect: false sayesinde tam sütunun dikey hizasına tıklamak yeterli!
+            const elements = chartInstance.getElementsAtEventForMode(evt, 'index', { intersect: false }, true);
+            
+            if (elements.length) {
+                // Her zaman "Realisation" (gerçekleşen veri çubuğu) olan ilk seti (index 0) güncelleyeceğiz.
+                editDatasetIndex = 0; 
+                editDataIndex = elements[0].index;
+                activeChart = chartInstance;
+                
+                const value = chartInstance.data.datasets[editDatasetIndex].data[editDataIndex];
+                
+                // Kutucuğu grafiğin içindeki boş bir alanda bile olsan tam fareyle tıkladığın yerde açıyoruz
+                floatInput.style.display = 'block';
+                floatInput.style.left = (evt.clientX - 20) + 'px'; 
+                floatInput.style.top = (evt.clientY - 30) + 'px';
+                floatInput.value = (value !== null && value !== undefined) ? value : '';
+                
+                // Kutucuk açıldığında direkt yazmaya başlayabilmen için odaklanıyor
+                setTimeout(() => floatInput.focus(), 50);
+            }
+        }
+
+        // Tıklama olaylarını her iki grafiğe de bağla
+        document.getElementById('ltcrChart').addEventListener('click', function(evt) {
+            handleChartClick(evt, ltcrChart);
+        });
+
+        document.getElementById('fr2Chart').addEventListener('click', function(evt) {
+            handleChartClick(evt, fr2Chart);
+        });
+
+        function updateChartPoint() {
+            if (activeChart && editDatasetIndex !== -1 && editDataIndex !== -1) {
+                // Virgülü noktaya çevirip sayıyı kaydediyoruz
+                let rawVal = floatInput.value.replace(',', '.');
+                let val = parseFloat(rawVal);
+                activeChart.data.datasets[editDatasetIndex].data[editDataIndex] = isNaN(val) ? null : val;
+                activeChart.update();
+            }
+            floatInput.style.display = 'none';
+        }
+
+        floatInput.addEventListener('blur', updateChartPoint);
+        floatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') updateChartPoint(); });
+        // -----------------------------------------------------------
+
+        function updateProgressBar(textId, barId, maxVal = 100) {
+            let val = parseFloat(document.getElementById(textId).innerText.replace('%', '').replace(',', '.')) || 0;
+            if (val > maxVal) val = maxVal;
+            if (val < 0) val = 0;
+            let percentage = (val / maxVal) * 100;
+            document.getElementById(barId).style.width = percentage + '%';
+        }
+
+        function updateVerticalProgressBar(textId, barId, maxVal = 100) {
+            let val = parseFloat(document.getElementById(textId).innerText.replace('%', '').replace(',', '.')) || 0;
+            if (val > maxVal) val = maxVal;
+            if (val < 0) val = 0;
+            let percentage = (val / maxVal) * 100;
+            document.getElementById(barId).style.height = percentage + '%';
+        }
+
+        function updateDoughnutChart(textId, chartInstance) {
+            let val = parseFloat(document.getElementById(textId).innerText.replace('%', '').replace(',', '.')) || 0;
+            if (val > 100) val = 100;
+            if (val < 0) val = 0;
+            chartInstance.data.datasets[0].data = [val, 100 - val];
+            chartInstance.update();
+        }
+
+        function updateBarChart() {
+            let fr0 = parseFloat(document.getElementById('valFR0').innerText) || 0;
+            let fr1 = parseFloat(document.getElementById('valFR1').innerText) || 0;
+            let fr2 = parseFloat(document.getElementById('valFR2').innerText) || 0;
+            let rk = parseFloat(document.getElementById('valRK').innerText) || 0;
+            kazaChart.data.datasets[0].data = [fr0, fr1, fr2, rk];
+            kazaChart.update();
+        }
+
+        document.querySelectorAll('.loto-fraction').forEach(fractionInput => {
+            fractionInput.addEventListener('input', function() {
+                const text = this.innerText.trim();
+                const parts = text.split('/');
+                const percentCell = this.nextElementSibling;
+                if (parts.length === 2) {
+                    const num = parseFloat(parts[0]);
+                    const den = parseFloat(parts[1]);
+                    if (!isNaN(num) && !isNaN(den) && den !== 0) {
+                        const percentage = Math.round((num / den) * 100);
+                        percentCell.innerText = percentage + '%';
+                    } else {
+                        percentCell.innerText = '-';
+                    }
+                }
+            });
+        });
+
+        database.ref('dashboard').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                if (data.content) {
+                    const editableElements = document.querySelectorAll('[contenteditable="true"]');
+                    editableElements.forEach((el) => {
+                        const key = el.id;
+                        if (key && data.content[key] !== undefined) {
+                            el.innerText = data.content[key];
+                        }
+                    });
+                }
+                
+                if (data.styles) {
+                    if(data.styles.bgColor) root.style.setProperty('--bg-color', data.styles.bgColor);
+                    if(data.styles.textMain) root.style.setProperty('--text-main', data.styles.textMain);
+                    if(data.styles.textMuted) {
+                        root.style.setProperty('--text-muted', data.styles.textMuted);
+                        Chart.defaults.color = data.styles.textMuted;
+                        kazaChart.options.scales.y.ticks.color = data.styles.textMuted;
+                        kazaChart.options.scales.x.ticks.color = data.styles.textMuted;
+                        ltcrChart.options.scales.y.ticks.color = data.styles.textMuted;
+                        ltcrChart.options.scales.x.ticks.color = data.styles.textMuted;
+                        fr2Chart.options.scales.y.ticks.color = data.styles.textMuted;
+                        fr2Chart.options.scales.x.ticks.color = data.styles.textMuted;
+                    }
+                    if(data.styles.vurguColor) {
+                        root.style.setProperty('--vurgu-color', data.styles.vurguColor);
+                        kazaChart.data.datasets[0].backgroundColor[0] = data.styles.vurguColor;
+                    }
+                    if(data.styles.cardBg) root.style.setProperty('--card-bg', data.styles.cardBg);
+                    if(data.styles.borderColor) root.style.setProperty('--border-color', data.styles.borderColor);
+                    if(data.styles.borderWidth) root.style.setProperty('--card-border-width', data.styles.borderWidth);
+                    if(data.styles.borderRadius) root.style.setProperty('--card-border-radius', data.styles.borderRadius);
+                    if(data.styles.iconColor) root.style.setProperty('--icon-color', data.styles.iconColor);
+                }
+
+                if (data.chartData) {
+                    if (data.chartData.ltcr) {
+                        data.chartData.ltcr.forEach((dsData, i) => { if(ltcrChart.data.datasets[i]) ltcrChart.data.datasets[i].data = dsData; });
+                        ltcrChart.update();
+                    }
+                    if (data.chartData.fr2) {
+                        data.chartData.fr2.forEach((dsData, i) => { if(fr2Chart.data.datasets[i]) fr2Chart.data.datasets[i].data = dsData; });
+                        fr2Chart.update();
+                    }
+                }
+
+                updateBarChart();
+                updateProgressBar('hsYayginlasma', 'hsYayginlasmaBar');
+                updateProgressBar('dwsScore', 'dwsBar');
+                updateVerticalProgressBar('intenseyeScore', 'intenseyeBar');
+                updateDoughnutChart('yasalScore', yasalChart);
+            }
+        });
+
+        document.getElementById('hsYayginlasma').addEventListener('input', () => updateProgressBar('hsYayginlasma', 'hsYayginlasmaBar', 100));
+        document.getElementById('dwsScore').addEventListener('input', () => updateProgressBar('dwsScore', 'dwsBar', 100));
+        document.getElementById('intenseyeScore').addEventListener('input', () => updateVerticalProgressBar('intenseyeScore', 'intenseyeBar', 100));
+        document.getElementById('yasalScore').addEventListener('input', () => updateDoughnutChart('yasalScore', yasalChart));
+        ['valFR0', 'valFR1', 'valFR2', 'valRK'].forEach(id => document.getElementById(id).addEventListener('input', updateBarChart));
+
+        settingsBtn.addEventListener('click', () => { colorTool.style.display = 'block'; });
+        closeTool.addEventListener('click', () => { colorTool.style.display = 'none'; });
+
+        function updateCSSVariable(varName, color) { root.style.setProperty(varName, color); }
+
+        document.addEventListener('click', (e) => {
+            const isCardClick = e.target.closest('.card');
+            const isToolClick = e.target.closest('#colorTool');
+            const isSettingsBtnClick = e.target.closest('#settingsBtn');
+
+            if (!isCardClick && !isToolClick && !isSettingsBtnClick) {
+                selectedCard = null;
+                cards.forEach(c => c.style.outline = 'none');
+                selectedCardLabel.innerText = 'Tümü';
+            }
+        });
+
+        cards.forEach(card => {
+            card.addEventListener('click', (e) => {
+                if(e.target.isContentEditable || e.target.tagName === 'INPUT' || e.target.tagName === 'CANVAS') return;
+                cards.forEach(c => c.style.outline = 'none');
+                selectedCard = card;
+                const vurguColor = getComputedStyle(root).getPropertyValue('--vurgu-color').trim();
+                card.style.outline = `2px solid ${vurguColor}`;
+                selectedCardLabel.innerText = 'Seçili Kart';
+            });
+        });
+
+        resetSelectionBtn.addEventListener('click', () => {
+            selectedCard = null;
+            cards.forEach(c => c.style.outline = 'none');
+            selectedCardLabel.innerText = 'Tümü';
+        });
+
+        bgColorPicker.addEventListener('input', (e) => updateCSSVariable('--bg-color', e.target.value));
+        textMainPicker.addEventListener('input', (e) => updateCSSVariable('--text-main', e.target.value));
+
+        textMutedGlobalPicker.addEventListener('input', (e) => {
+            const newColor = e.target.value;
+            updateCSSVariable('--text-muted', newColor);
+            Chart.defaults.color = newColor;
+            kazaChart.options.scales.y.ticks.color = newColor;
+            kazaChart.options.scales.x.ticks.color = newColor;
+            kazaChart.update();
+            ltcrChart.options.scales.y.ticks.color = newColor;
+            ltcrChart.options.scales.x.ticks.color = newColor;
+            ltcrChart.update();
+            fr2Chart.options.scales.y.ticks.color = newColor;
+            fr2Chart.options.scales.x.ticks.color = newColor;
+            fr2Chart.update();
+            yasalChart.update();
+        });
+
+        accentColorPicker.addEventListener('input', (e) => {
+            const newColor = e.target.value;
+            updateCSSVariable('--vurgu-color', newColor);
+            if (selectedCard) { selectedCard.style.outlineColor = newColor; }
+            kazaChart.data.datasets[0].backgroundColor[0] = newColor;
+            kazaChart.update();
+        });
+
+        cardBgPicker.addEventListener('input', (e) => {
+            if (selectedCard) {
+                selectedCard.style.backgroundColor = e.target.value;
+            } else {
+                updateCSSVariable('--card-bg', e.target.value);
+                cards.forEach(c => c.style.backgroundColor = '');
+            }
+        });
+
+        borderColorPicker.addEventListener('input', (e) => {
+            if (selectedCard) {
+                selectedCard.style.borderColor = e.target.value;
+            } else {
+                updateCSSVariable('--border-color', e.target.value);
+                cards.forEach(c => c.style.borderColor = '');
+            }
+        });
+
+        borderWidthPicker.addEventListener('input', (e) => {
+            let val = e.target.value + 'px';
+            if (selectedCard) {
+                selectedCard.style.borderWidth = val;
+            } else {
+                updateCSSVariable('--card-border-width', val);
+                cards.forEach(c => c.style.borderWidth = '');
+            }
+        });
+
+        borderRadiusPicker.addEventListener('input', (e) => {
+            let val = e.target.value + 'px';
+            if (selectedCard) {
+                selectedCard.style.borderRadius = val;
+            } else {
+                updateCSSVariable('--card-border-radius', val);
+                cards.forEach(c => c.style.borderRadius = '');
+            }
+        });
+
+        iconColorPicker.addEventListener('input', (e) => {
+            const newColor = e.target.value;
+            if (selectedCard) {
+                const icon = selectedCard.querySelector('.card-icon');
+                if (icon) icon.style.color = newColor;
+            } else {
+                updateCSSVariable('--icon-color', newColor);
+                cards.forEach(c => {
+                    const icon = c.querySelector('.card-icon');
+                    if (icon) icon.style.color = '';
+                });
+            }
+        });
+
+        cardTextMainPicker.addEventListener('input', (e) => {
+            const newColor = e.target.value;
+            if (selectedCard) {
+                const elements = selectedCard.querySelectorAll(selectorsMainText);
+                elements.forEach(el => el.style.color = newColor);
+            }
+        });
+
+        cardTextMutedPicker.addEventListener('input', (e) => {
+            const newColor = e.target.value;
+            if (selectedCard) {
+                const elements = selectedCard.querySelectorAll(selectorsMutedText);
+                elements.forEach(el => el.style.color = newColor);
+            }
+        });
+
+        saveBtn.addEventListener('click', () => {
+            const editableElements = document.querySelectorAll('[contenteditable="true"]');
+            const contentData = {};
+            editableElements.forEach((el) => {
+                const key = el.id;
+                if (key) contentData[key] = el.innerText;
+            });
+
+            const computedStyles = getComputedStyle(root);
+            const styleData = {
+                bgColor: root.style.getPropertyValue('--bg-color') || computedStyles.getPropertyValue('--bg-color').trim(),
+                textMain: root.style.getPropertyValue('--text-main') || computedStyles.getPropertyValue('--text-main').trim(),
+                textMuted: root.style.getPropertyValue('--text-muted') || computedStyles.getPropertyValue('--text-muted').trim(),
+                vurguColor: root.style.getPropertyValue('--vurgu-color') || computedStyles.getPropertyValue('--vurgu-color').trim(),
+                cardBg: root.style.getPropertyValue('--card-bg') || computedStyles.getPropertyValue('--card-bg').trim(),
+                borderColor: root.style.getPropertyValue('--border-color') || computedStyles.getPropertyValue('--border-color').trim(),
+                borderWidth: root.style.getPropertyValue('--card-border-width') || computedStyles.getPropertyValue('--card-border-width').trim(),
+                borderRadius: root.style.getPropertyValue('--card-border-radius') || computedStyles.getPropertyValue('--card-border-radius').trim(),
+                iconColor: root.style.getPropertyValue('--icon-color') || computedStyles.getPropertyValue('--icon-color').trim()
+            };
+
+            const chartData = {
+                ltcr: ltcrChart.data.datasets.map(ds => ds.data),
+                fr2: fr2Chart.data.datasets.map(ds => ds.data)
+            };
+
+            const dashboardData = {
+                content: contentData,
+                styles: styleData,
+                chartData: chartData
+            };
+            
+            database.ref('dashboard').set(dashboardData);
+            
+            selectedCard = null;
+            cards.forEach(c => c.style.outline = 'none');
+            selectedCardLabel.innerText = 'Tümü';
+            colorTool.style.display = 'none';
+        });
+    </script>
+</body></html>
