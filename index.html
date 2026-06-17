@@ -562,7 +562,7 @@
             width: 100%;
             pointer-events: auto;
         }
-        .acc-grid-ytd  { grid-template-columns: 1.5fr 1fr 1fr 1fr; grid-template-rows: auto repeat(6, minmax(0, 1fr)); }
+        .acc-grid-ytd  { grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr; grid-template-rows: auto repeat(6, minmax(0, 1fr)); }
         .acc-grid-days { grid-template-columns: 1.7fr 1fr;          grid-template-rows: auto repeat(6, minmax(0, 1fr)); }
         .acc-h {
             font-size: 9px;
@@ -710,7 +710,6 @@
 
     <div class="dashboard-columns">
 
-        <!-- ============ SOL SÜTUN: İŞ KAZALARI ============ -->
         <div class="dash-col dash-col-left">
 
             <div class="card" id="card_accidents_ytd" style="outline: none;">
@@ -739,7 +738,6 @@
 
         </div>
 
-        <!-- ============ ORTA SÜTUN: GRAFİKLER ============ -->
         <div class="dash-col dash-col-mid">
 
             <div class="card" id="card_ltcr" style="outline: none;">
@@ -787,7 +785,6 @@
 
         </div>
 
-        <!-- ============ SAĞ SÜTUN: TAKİP EDİLENLER ============ -->
         <div class="dash-col dash-col-right">
 
             <div class="card" id="card_hstool" style="outline: none;">
@@ -1119,7 +1116,7 @@
         // ===== İŞ KAZASI TABLOLARI (Accidents YTD & Days Since Last FR2) =====
         const accDepartments = ['PLANT', 'MOTOR', 'VİTES KUTUSU', 'DÖKÜMHANE', 'BAKIM', 'LOJİSTİK'];
         const defaultAccidents = {};
-        accDepartments.forEach(d => { defaultAccidents[d] = { F0: 0, F1: 0, F2: 0, lastFR2Date: null }; });
+        accDepartments.forEach(d => { defaultAccidents[d] = { F0: 0, RK: 0, F1: 0, F2: 0, lastFR2Date: null }; });
         let accidentData = JSON.parse(JSON.stringify(defaultAccidents));
         let accModalContext = null;
 
@@ -1134,7 +1131,10 @@
         }
 
         function renderAccidents() {
-            accDepartments.forEach(d => { if (!accidentData[d]) accidentData[d] = { F0: 0, F1: 0, F2: 0, lastFR2Date: null }; });
+            accDepartments.forEach(d => { 
+                if (!accidentData[d]) accidentData[d] = { F0: 0, RK: 0, F1: 0, F2: 0, lastFR2Date: null }; 
+                if (accidentData[d].RK === undefined) accidentData[d].RK = 0;
+            });
 
             const ytd = document.getElementById('accYtdGrid');
             const days = document.getElementById('daysFr2Grid');
@@ -1163,6 +1163,7 @@
             };
 
             ytd.appendChild(head('Departman', 'left'));
+            ytd.appendChild(head('RK'));
             ytd.appendChild(head('FR0'));
             ytd.appendChild(head('FR1'));
             ytd.appendChild(head('FR2'));
@@ -1173,7 +1174,7 @@
                 const data = accidentData[dept];
 
                 ytd.appendChild(deptEl(dept));
-                ['F0', 'F1', 'F2'].forEach(f => {
+                ['RK', 'F0', 'F1', 'F2'].forEach(f => {
                     const val = data[f] || 0;
                     const c = cellEl(val, val === 0 ? 'zero' : 'nonzero');
                     c.addEventListener('click', (e) => { e.stopPropagation(); openAccCountModal(dept, f); });
