@@ -534,6 +534,132 @@
         .save-btn:hover {
             background: #047857;
         }
+
+        /* === 3 SÜTUNLU YERLEŞİM === */
+        .dashboard-columns {
+            display: flex;
+            gap: 16px;
+            flex-grow: 1;
+            min-height: 0;
+        }
+        .dash-col {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+        }
+        .dash-col-left  { flex: 0 0 400px; }
+        .dash-col-mid   { flex: 1 1 auto; min-width: 0; }
+        .dash-col-right { flex: 0 0 380px; }
+        .dash-col > .card { flex: 1; min-height: 0; }
+
+        /* === İŞ KAZASI TABLOLARI (grid: kartı doldurur, satırlar otomatik sığar) === */
+        .acc-grid {
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            gap: 4px;
+            width: 100%;
+            pointer-events: auto;
+        }
+        .acc-grid-ytd  { grid-template-columns: 1.5fr 1fr 1fr 1fr; grid-template-rows: auto repeat(6, minmax(0, 1fr)); }
+        .acc-grid-days { grid-template-columns: 1.7fr 1fr;          grid-template-rows: auto repeat(6, minmax(0, 1fr)); }
+        .acc-h {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .acc-h.left { justify-content: flex-start; padding-left: 4px; }
+        .acc-dept {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            padding-left: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .acc-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 16px;
+            color: #ffffff;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            transition: filter 0.15s ease, transform 0.1s ease;
+        }
+        .acc-cell:hover { filter: brightness(1.06); transform: scale(0.97); }
+        .acc-cell.zero { background: var(--accent-green); }
+        .acc-cell.nonzero { background: var(--accent-red); }
+
+        /* === KAZA DÜZENLEME MODALI === */
+        .acc-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .acc-modal.show { display: flex; }
+        .acc-modal-content {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 22px;
+            width: 300px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.25);
+        }
+        .acc-modal-content h3 {
+            margin: 0 0 14px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--vurgu-color);
+        }
+        .acc-modal-content input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px 10px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            outline: none;
+            margin-bottom: 16px;
+        }
+        .acc-modal-content input:focus { border-color: var(--vurgu-color); }
+        .acc-modal-buttons { display: flex; gap: 8px; justify-content: flex-end; }
+        .acc-modal-buttons button {
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            font-family: 'Poppins', sans-serif;
+        }
+        .acc-btn-cancel { background: #f1f5f9; color: var(--text-main); border: 1px solid #cbd5e1 !important; }
+        .acc-btn-save { background: var(--accent-green); color: #ffffff; }
+        /* Orta sütun grafik kartları: tuvale dikeyde daha fazla alan */
+        #card_ltcr, #card_fr1, #card_fr2 {
+            padding-top: 10px;
+            padding-bottom: 6px;
+        }
+        #card_ltcr .card-header,
+        #card_fr1 .card-header,
+        #card_fr2 .card-header {
+            margin-bottom: 2px;
+        }
     </style>
 </head>
 <body>
@@ -549,7 +675,7 @@
         </div>
         <div class="header-right">
             <i class="fas fa-cog" id="settingsBtn"></i>
-            <div class="date" contenteditable="true" id="headerDate">&nbsp;</div>
+            <div class="date" id="headerDate">&nbsp;</div>
         </div>
     </div>
 
@@ -582,248 +708,190 @@
         </div>
     </div>
 
-    <div class="grid-container">
-        
-        <div class="card col-4" id="card_kaza" style="outline: none;">
-            <div class="card-header">
-    <div class="card-header-left">
-        <div class="card-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-        <div class="card-title" contenteditable="true" id="titleKaza">KATEGORİSEL İŞ KAZALARI</div>
-    </div>
-    <div style="display: flex; align-items: center; gap: 6px; pointer-events: auto;">
-        <span contenteditable="true" id="kazasizGunSayi" style="font-size: 22px; font-weight: 800; color: var(--vurgu-color); outline: none; min-width: 20px; display: inline-block;">&nbsp;</span>
-        <span contenteditable="true" id="kazasizGunLabel" style="font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; outline: none;">Gün Kazasız</span>
-    </div>
-</div>
-            <div class="card-content-area">
-                <div class="accident-inputs">
-                    <div class="accident-badge">FR0: <span id="valFR0" contenteditable="true">&nbsp;</span></div>
-                    <div class="accident-badge">FR1: <span id="valFR1" contenteditable="true">&nbsp;</span></div>
-                    <div class="accident-badge">FR2: <span id="valFR2" contenteditable="true">&nbsp;</span></div>
-                    <div class="accident-badge">RK: <span id="valRK" contenteditable="true">&nbsp;</span></div>
-                </div>
-                <div class="chart-container-large"><canvas id="kazaKategoriChart"></canvas></div>
-            </div>
-        </div>
+    <div class="dashboard-columns">
 
-        <div class="card col-4" id="card_ltcr" style="outline: none;">
-            <div class="card-header">
-                <div class="card-header-left">
-                    <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
-                    <div class="card-title" contenteditable="true" id="titleLtcr">LTCR</div>
-                </div>
-                <div class="card-subtitle-hint"></div>
-            </div>
-            <div class="card-content-area" id="ltcrContainer">
-                <div class="chart-container-large" style="margin-top: 0;">
-                    <canvas id="ltcrChart"></canvas>
-                </div>
-            </div>
-        </div>
+        <!-- ============ SOL SÜTUN: İŞ KAZALARI ============ -->
+        <div class="dash-col dash-col-left">
 
-        <div class="card col-4" id="card_fr2" style="outline: none;">
-            <div class="card-header">
-                <div class="card-header-left">
-                    <div class="card-icon"><i class="fa-solid fa-chart-area"></i></div>
-                    <div class="card-title" contenteditable="true" id="titleFr2">FR2</div>
-                </div>
-            </div>
-            <div class="card-content-area" id="fr2Container">
-                <div class="chart-container-large" style="margin-top: 0;">
-                    <canvas id="fr2Chart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="card col-3" id="card_posta" style="outline: none;">
-            <div class="card-header">
-                <div class="card-header-left">
-                    <div class="card-icon"><i class="fa-solid fa-clipboard-list"></i></div>
-                    <div class="card-title" contenteditable="true" id="titlePosta">POSTA RİSK DEĞERLENDİRME</div>
-                </div>
-            </div>
-            <div class="card-content-area">
-                <table style="width: 70%; margin: 0 auto;">
-                    <tbody><tr><th>Departman</th><th>İlerleme</th></tr>
-                    <tr><td contenteditable="true" id="postaDep1">VK</td><td contenteditable="true" id="postaVal1">&nbsp;</td></tr>
-                    <tr><td contenteditable="true" id="postaDep2">Motor</td><td contenteditable="true" id="postaVal2">&nbsp;</td></tr>
-                    <tr><td contenteditable="true" id="postaDep3">Döküm</td><td contenteditable="true" id="postaVal3">&nbsp;</td></tr>
-                    <tr><td contenteditable="true" id="postaDep4">Lojistik</td><td contenteditable="true" id="postaVal4">&nbsp;</td></tr>
-                </tbody></table>
-            </div>
-        </div>
-
-        <div class="card col-3" id="card_ca" style="outline: none;">
-            <div class="card-header">
-                <div class="card-header-left">
-                    <div class="card-icon"><i class="fa-solid fa-list-check"></i></div>
-                    <div class="card-title" contenteditable="true" id="titleCa">CA HAFTALIK ANİMASYON TAKİBİ</div>
-                </div>
-            </div>
-            <div class="card-content-area">
-                <table style="width: 80%; margin: 0 auto;">
-                    <tbody><tr><th>Atölye</th><th>Atölye Sayısı</th><th>Devreye Alan</th></tr>
-                    <tr><td contenteditable="true" id="caDep1">VK</td><td contenteditable="true" id="caVal1_1">&nbsp;</td><td contenteditable="true" id="caVal1_2">&nbsp;</td></tr>
-                    <tr><td contenteditable="true" id="caDep2">Motor</td><td contenteditable="true" id="caVal2_1">&nbsp;</td><td contenteditable="true" id="caVal2_2">&nbsp;</td></tr>
-                    <tr><td contenteditable="true" id="caDep3">Döküm</td><td contenteditable="true" id="caVal3_1">&nbsp;</td><td contenteditable="true" id="caVal3_2">&nbsp;</td></tr>
-                    <tr><td contenteditable="true" id="caDep4">Lojistik</td><td contenteditable="true" id="caVal4_1">&nbsp;</td><td contenteditable="true" id="caVal4_2">&nbsp;</td></tr>
-                </tbody></table>
-            </div>
-        </div>
-
-        <div class="card col-2" id="card_loto" style="outline: none;">
-            <div class="card-header">
-                <div class="card-header-left">
-                    <div class="card-icon"><i class="fa-solid fa-qrcode"></i></div>
-                    <div class="card-title" contenteditable="true" id="titleLoto">LOTO FOS QR</div>
-                </div>
-            </div>
-            <div class="card-content-area">
-                <table style="width: 100%; margin: 0 auto; font-size: 11px;">
-                    <tbody>
-                        <tr><th>Dep.</th><th style="text-align: center;">Atölye</th><th style="text-align: right;">Oran</th></tr>
-                        <tr><td contenteditable="true" id="lotoDep1">Döküm</td><td contenteditable="true" class="loto-fraction" id="lotoFrac1" style="text-align: center;">&nbsp;</td><td contenteditable="true" id="lotoPerc1" style="text-align: right;">&nbsp;</td></tr>
-                        <tr><td contenteditable="true" id="lotoDep2">Motor</td><td contenteditable="true" class="loto-fraction" id="lotoFrac2" style="text-align: center;">&nbsp;</td><td contenteditable="true" id="lotoPerc2" style="text-align: right;">&nbsp;</td></tr>
-                        <tr><td contenteditable="true" id="lotoDep3">VK</td><td contenteditable="true" class="loto-fraction" id="lotoFrac3" style="text-align: center;">&nbsp;</td><td contenteditable="true" id="lotoPerc3" style="text-align: right;">&nbsp;</td></tr>
-                        <tr><td contenteditable="true" id="lotoDep4">Loj.</td><td contenteditable="true" class="loto-fraction" id="lotoFrac4" style="text-align: center;">&nbsp;</td><td contenteditable="true" id="lotoPerc4" style="text-align: right;">&nbsp;</td></tr>                       
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="card col-2" id="card_dws" style="outline: none;">
-            <div class="card-header">
-                <div class="card-header-left">
-                    <div class="card-icon"><i class="fa-solid fa-bars-progress"></i></div>
-                    <div class="card-title" contenteditable="true" id="titleDws" style="font-size: 12.5px;">HAT BAZINDA DWS</div>
-                </div>
-            </div>
-            <div class="card-content-area">
-                <div style="width: 100%; margin: 0 auto; padding-left: 8px;">
-                    <div class="metric-large" id="dwsScore" contenteditable="true" style="font-size: 35px;">&nbsp;</div>
-                    <div class="dws-status" style="font-size: 15px; flex-wrap: wrap; gap: 4px;">
-                        <span contenteditable="true" id="dwsOk">&nbsp;</span> <span class="dws-status-label" style="font-size: 11px;">OK</span>
-                        <span class="dws-separator" style="margin: 0 2px;">|</span>
-                        <span contenteditable="true" id="dwsDevam">&nbsp;</span> <span class="dws-status-label" style="font-size: 11px;">DEVAM</span>
+            <div class="card" id="card_accidents_ytd" style="outline: none;">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="card-title" contenteditable="true" id="titleAccYtd">ACCIDENTS (YTD)</div>
                     </div>
-                    <div class="progress-bar-bg">
-                        <div id="dwsBar" class="progress-bar-fill" style="width: 0%;"></div>
+                </div>
+                <div class="card-content-area" style="padding-top: 4px;">
+                    <div class="acc-grid acc-grid-ytd" id="accYtdGrid"></div>
+                </div>
+            </div>
+
+            <div class="card" id="card_days_fr2" style="outline: none;">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                        <div class="card-title" contenteditable="true" id="titleDaysFr2" style="font-size: 11px;">DAYS SINCE LAST FR2 ACCIDENT</div>
+                    </div>
+                </div>
+                <div class="card-content-area" style="padding-top: 4px;">
+                    <div class="acc-grid acc-grid-days" id="daysFr2Grid"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ============ ORTA SÜTUN: GRAFİKLER ============ -->
+        <div class="dash-col dash-col-mid">
+
+            <div class="card" id="card_ltcr" style="outline: none;">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
+                        <div class="card-title" contenteditable="true" id="titleLtcr">LTCR</div>
+                    </div>
+                    <div class="card-subtitle-hint"></div>
+                </div>
+                <div class="card-content-area" id="ltcrContainer">
+                    <div class="chart-container-large" style="margin-top: 0;">
+                        <canvas id="ltcrChart"></canvas>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="card col-2" id="card_hstool" style="outline: none;">
-            <div class="card-header">
-                <div class="card-header-left">
-                    <div class="card-icon"><i class="fa-solid fa-clipboard-check"></i></div>
-                    <div class="card-title" contenteditable="true" id="titleHsTool" style="font-size: 10px;">HS KRİTERLERİ</div>
+            <div class="card" id="card_fr1" style="outline: none;">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon"><i class="fa-solid fa-chart-column"></i></div>
+                        <div class="card-title" contenteditable="true" id="titleFr1">FR1</div>
+                    </div>
+                </div>
+                <div class="card-content-area" id="fr1Container">
+                    <div class="chart-container-large" style="margin-top: 0;">
+                        <canvas id="fr1Chart"></canvas>
+                    </div>
                 </div>
             </div>
-            <div class="card-content-area">
-                <div class="dojo-metrics" style="padding: 8px; flex-direction: column; align-items: flex-start; gap: 8px; background: none; border: none;">
-                    <div class="dojo-item" style="text-align: left; width: 100%;">
-                        <div class="metric-large" id="hsToolScore" contenteditable="true" style="font-size: 24px;">&nbsp;</div>
-                        <div class="metric-sub" contenteditable="true" id="hsToolLabel" style="margin-top: 0px;">Skor</div>
+
+            <div class="card" id="card_fr2" style="outline: none;">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon"><i class="fa-solid fa-chart-area"></i></div>
+                        <div class="card-title" contenteditable="true" id="titleFr2">FR2</div>
                     </div>
-                    <div class="dojo-divider" style="height: 1px; width: 100%;"></div>
-                    <div class="dojo-item" style="text-align: left; width: 100%;">
-                        <div class="metric-large" id="hsYayginlasma" contenteditable="true" style="font-size: 24px;">&nbsp;</div>
-                        <div class="metric-sub" contenteditable="true" id="hsYayginlasmaLabel" style="margin-top: 0px;">Hedef: %85</div>
-                        <div class="progress-bar-bg" style="margin-top: 4px; height: 5px;">
-                            <div id="hsYayginlasmaBar" class="progress-bar-fill" style="width: 0%;"></div>
+                </div>
+                <div class="card-content-area" id="fr2Container">
+                    <div class="chart-container-large" style="margin-top: 0;">
+                        <canvas id="fr2Chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ============ SAĞ SÜTUN: TAKİP EDİLENLER ============ -->
+        <div class="dash-col dash-col-right">
+
+            <div class="card" id="card_hstool" style="outline: none;">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+                        <div class="card-title" contenteditable="true" id="titleHsTool" style="font-size: 11px;">HS KRİTERLERİ | YAYGINLAŞTIRMA</div>
+                    </div>
+                </div>
+                <div class="card-content-area">
+                    <div class="dojo-metrics" style="padding: 0; background: none; border: none;">
+                        <div class="dojo-item">
+                            <div class="metric-large" id="hsToolScore" contenteditable="true" style="font-size: 30px;">&nbsp;</div>
+                            <div class="metric-sub" contenteditable="true" id="hsToolLabel" style="font-size: 13px;">Skor</div>
+                        </div>
+                        <div class="dojo-divider"></div>
+                        <div class="dojo-item" style="min-width: 95px;">
+                            <div class="metric-large" id="hsYayginlasma" contenteditable="true" style="font-size: 30px;">&nbsp;</div>
+                            <div class="metric-sub" contenteditable="true" id="hsYayginlasmaLabel" style="font-size: 13px;">Hedef: %85</div>
+                            <div class="progress-bar-bg" style="margin-top: 6px; height: 5px;">
+                                <div id="hsYayginlasmaBar" class="progress-bar-fill" style="width: 0%;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="card" id="card_yasal" style="outline: none;">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon"><i class="fa-solid fa-file-shield"></i></div>
+                        <div class="card-title" contenteditable="true" id="titleYasal" style="font-size: 13px;">YASAL İŞ GÜVENLİĞi eğitimi</div>
+                    </div>
+                </div>
+                <div class="card-content-area">
+                    <div class="chart-wrapper-row">
+                        <div style="pointer-events: auto; margin-top: 18px;">
+                            <div class="metric-large" id="yasalScore" contenteditable="true" style="font-size: 44px;">&nbsp;</div>
+                            <div class="metric-sub" contenteditable="true" id="yasalLabel" style="font-size: 13px;">Tamamlanma Oranı</div>
+                        </div>
+                        <div class="chart-container"><canvas id="yasalEgitimChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="card_santiye" style="outline: none;">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon"><i class="fa-solid fa-helmet-safety"></i></div>
+                        <div class="card-title" contenteditable="true" id="titleSantiye" style="font-size: 13px;">AKTİF ŞANTİYE SAYISI & HS CHECK</div>
+                    </div>
+                </div>
+                <div class="card-content-area">
+                    <div class="dojo-metrics" style="padding: 0; background: none; border: none;">
+                        <div class="dojo-item">
+                            <div class="metric-large" contenteditable="true" id="santiyeVal1" style="font-size: 34px;">&nbsp;</div>
+                            <div class="metric-sub" contenteditable="true" id="santiyeLabel1" style="font-size: 13px;">Açık Şantiye</div>
+                        </div>
+                        <div class="dojo-divider"></div>
+                        <div class="dojo-item">
+                            <div class="metric-large" contenteditable="true" id="santiyeVal2" style="font-size: 34px;">&nbsp;</div>
+                            <div class="metric-sub" contenteditable="true" id="santiyeLabel2" style="font-size: 13px;">HS Check</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="card_intenseye" style="outline: none;">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon"><i class="fa-solid fa-camera-retro"></i></div>
+                        <div class="card-title" contenteditable="true" id="titleIntenseye" style="font-size: 13px;">INTENSEYE GÜVENLİK PUANI</div>
+                    </div>
+                </div>
+                <div class="card-content-area" style="flex-direction: row; justify-content: space-between; align-items: center;">
+                    <div style="margin-top: 22px;">
+                        <div class="metric-large" id="intenseyeScore" contenteditable="true" style="font-size: 46px;">&nbsp;</div>
+                        <div class="metric-sub" contenteditable="true" id="intenseyeLabel" style="font-size: 13px;">&nbsp;</div>
+                    </div>
+                    <div class="vertical-bar-wrapper-container">
+                        <div class="vertical-bar-target-group">
+                            <span class="vertical-bar-target-text" style="font-size: 12px;">Hedef %90</span>
+                            <div class="vertical-bar-target-line"></div>
+                        </div>
+                        <div class="vertical-bar-container">
+                            <div id="intenseyeBar" class="vertical-bar-fill" style="height: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <div class="card col-3" id="card_santiye" style="outline: none;">
-            <div class="card-header">
-                <div class="card-header-left">
-                    <div class="card-icon"><i class="fa-solid fa-helmet-safety"></i></div>
-                    <div class="card-title" contenteditable="true" id="titleSantiye" style="font-size: 13px;">AKTİF ŞANTİYE SAYISI & HS CHECK</div>
-                </div>
-            </div>
-            <div class="card-content-area">
-                <div class="dojo-metrics" style="padding: 0; background: none; border: none;">
-                    <div class="dojo-item">
-                        <div class="metric-large" contenteditable="true" id="santiyeVal1" style="font-size: 42px;">&nbsp;</div>
-                        <div class="metric-sub" contenteditable="true" id="santiyeLabel1" style="font-size: 13px;">Açık Şantiye</div>
-                    </div>
-                    <div class="dojo-divider"></div>
-                    <div class="dojo-item">
-                        <div class="metric-large" contenteditable="true" id="santiyeVal2" style="font-size: 42px;">&nbsp;</div>
-                        <div class="metric-sub" contenteditable="true" id="santiyeLabel2" style="font-size: 13px;">HS Check</div>
-                    </div>
-                </div>
+    </div>
+
+    <div class="acc-modal" id="accModal">
+        <div class="acc-modal-content">
+            <h3 id="accModalTitle">Değer Düzenle</h3>
+            <input type="text" id="accModalInput">
+            <div class="acc-modal-buttons">
+                <button class="acc-btn-cancel" id="accModalCancel">İptal</button>
+                <button class="acc-btn-save" id="accModalSave">Kaydet</button>
             </div>
         </div>
-
-        <div class="card col-3" id="card_yasal" style="outline: none;">
-            <div class="card-header">
-                <div class="card-header-left">
-                    <div class="card-icon"><i class="fa-solid fa-file-shield"></i></div>
-                    <div class="card-title" contenteditable="true" id="titleYasal" style="font-size: 13px;">YASAL İŞ GÜVENLİĞi eğitimi</div>
-                </div>
-            </div>
-            <div class="card-content-area">
-                <div class="chart-wrapper-row">
-                    <div style="pointer-events: auto;">
-                        <div class="metric-large" id="yasalScore" contenteditable="true" style="font-size: 42px;">&nbsp;</div>
-                        <div class="metric-sub" contenteditable="true" id="yasalLabel" style="font-size: 13px;">Tamamlanma Oranı</div>
-                    </div>
-                    <div class="chart-container"><canvas id="yasalEgitimChart"></canvas></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card col-3" id="card_dojo" style="outline: none;">
-            <div class="card-header">
-                <div class="card-header-left">
-                    <div class="card-icon"><i class="fa-solid fa-person-chalkboard"></i></div>
-                    <div class="card-title" contenteditable="true" id="titleDojo" style="font-size: 13px;">RİSK FARKINDALIĞI semineri</div>
-                </div>
-            </div>
-            <div class="card-content-area">
-                <div class="dojo-metrics">
-                    <div class="dojo-item">
-                        <div class="metric-large" contenteditable="true" id="dojoVal1" style="font-size: 42px;">&nbsp;</div>
-                        <div class="metric-sub" contenteditable="true" id="dojoLabel1" style="font-size: 13px;">Seans Yapıldı</div>
-                    </div>
-                    <div class="dojo-divider"></div>
-                    <div class="dojo-item">
-                        <div class="metric-large" contenteditable="true" id="dojoVal2" style="font-size: 42px;">&nbsp;</div>
-                        <div class="metric-sub" contenteditable="true" id="dojoLabel2" style="font-size: 13px;">Kişiye Verildi</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card col-3" id="card_intenseye" style="outline: none;">
-            <div class="card-header">
-                <div class="card-header-left">
-                    <div class="card-icon"><i class="fa-solid fa-camera-retro"></i></div>
-                    <div class="card-title" contenteditable="true" id="titleIntenseye" style="font-size: 13px;">INTENSEYE GÜVENLİK PUANI</div>
-                </div>
-            </div>
-            <div class="card-content-area" style="flex-direction: row; justify-content: space-between; align-items: center;">
-                <div>
-                    <div class="metric-large" id="intenseyeScore" contenteditable="true" style="font-size: 42px;">&nbsp;</div>
-                    <div class="metric-sub" contenteditable="true" id="intenseyeLabel" style="font-size: 13px;">&nbsp;</div>
-                </div>
-                <div class="vertical-bar-wrapper-container">
-                    <div class="vertical-bar-target-group">
-                        <span class="vertical-bar-target-text" style="font-size: 12px;">Hedef %90</span>
-                        <div class="vertical-bar-target-line"></div>
-                    </div>
-                    <div class="vertical-bar-container">
-                        <div id="intenseyeBar" class="vertical-bar-fill" style="height: 0%;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 
     <script>
@@ -876,7 +944,7 @@
             afterDatasetsDraw(chart, args, pluginOptions) {
                 const { ctx, data } = chart;
                 ctx.save();
-                if (chart.canvas.id === 'ltcrChart' || chart.canvas.id === 'fr2Chart') {
+                if (chart.canvas.id === 'ltcrChart' || chart.canvas.id === 'fr2Chart' || chart.canvas.id === 'fr1Chart') {
                     ctx.font = 'bold 8px Poppins';
                 } else {
                     ctx.font = 'bold 10px Poppins';
@@ -912,30 +980,6 @@
         };
 
         let yasalChart = new Chart(document.getElementById('yasalEgitimChart'), { type: 'doughnut', data: { datasets: [{ data: [0, 100], backgroundColor: ['#059669', '#f1f5f9'], borderWidth: 0 }] }, options: doughnutOptions });
-
-        let kazaChart = new Chart(document.getElementById('kazaKategoriChart'), {
-            type: 'bar',
-            data: {
-                labels: ['FR0', 'FR1', 'FR2', 'RK'],
-                datasets: [{
-                    data: [0, 0, 0, 0],
-                    backgroundColor: [getComputedStyle(root).getPropertyValue('--vurgu-color').trim(), '#d97706', '#dc2626', '#2563eb'],
-                    borderRadius: 4,
-                    borderWidth: 0,
-                    barThickness: 24
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false }, tooltip: { enabled: false }, customDataLabels: false },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { color: Chart.defaults.color, stepSize: 1 } },
-                    x: { grid: { display: false }, border: { display: false }, ticks: { font: { weight: 'bold' }, color: Chart.defaults.color } }
-                },
-                animation: { duration: 0 }
-            }
-        });
 
         let ltcrChart = new Chart(document.getElementById('ltcrChart'), {
             type: 'line',
@@ -973,6 +1017,24 @@
             }
         });
 
+        let fr1Chart = new Chart(document.getElementById('fr1Chart'), {
+            type: 'line',
+            data: {
+                labels: ['2023', '2024', '2025', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+                datasets: [
+                    { type: 'bar', label: 'Realisation', data: [0.96, 0.83, 0.86, 0.89, 0.86, 0.90, 0.93, 0.00, null, null, null, null, null, null, null], backgroundColor: '#f97316', barPercentage: 0.5 },
+                    { type: 'line', label: 'Commitment', data: [0.52, 0.52, 1.03, 1.49, 1.44, 1.35, 1.23, 1.13, 1.04, 1.02, 1.05, 1.01, 1.00, 0.98, 0.97], borderColor: '#0ea5e9', borderWidth: 2, tension: 0.1, pointRadius: 0 },
+                    { type: 'line', label: 'Target', data: [0.52, 0.52, 1.03, 1.49, 1.44, 1.35, 1.23, 1.13, 1.04, 1.02, 1.05, 1.01, 1.00, 0.98, 0.97], borderColor: '#1e3a8a', borderWidth: 2, tension: 0.1, pointRadius: 0 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, layout: { padding: { top: 0, right: 0, left: 0, bottom: 0 } },
+                plugins: { legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 6, boxHeight: 6, useBorderRadius: true, borderRadius: 2, font: { size: 8 }, padding: 5 } }, tooltip: { enabled: false } },
+                scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { color: Chart.defaults.color, font: {size: 8} }, max: 1.7 }, x: { grid: { display: false }, border: { display: false }, ticks: { color: Chart.defaults.color, font: {size: 8}, maxRotation: 45, minRotation: 45 } } },
+                animation: { duration: 0 }
+            }
+        });
+
         // ----- ÇOK DAHA İYİ TIKLAMA VE DÜZENLEME MANTIĞI -----
         const floatInput = document.getElementById('floatingInput');
         let editDatasetIndex = -1;
@@ -1005,6 +1067,10 @@
         // Tıklama olaylarını her iki grafiğe de bağla
         document.getElementById('ltcrChart').addEventListener('click', function(evt) {
             handleChartClick(evt, ltcrChart);
+        });
+
+        document.getElementById('fr1Chart').addEventListener('click', function(evt) {
+            handleChartClick(evt, fr1Chart);
         });
 
         document.getElementById('fr2Chart').addEventListener('click', function(evt) {
@@ -1050,32 +1116,129 @@
             chartInstance.update();
         }
 
-        function updateBarChart() {
-            let fr0 = parseFloat(document.getElementById('valFR0').innerText) || 0;
-            let fr1 = parseFloat(document.getElementById('valFR1').innerText) || 0;
-            let fr2 = parseFloat(document.getElementById('valFR2').innerText) || 0;
-            let rk = parseFloat(document.getElementById('valRK').innerText) || 0;
-            kazaChart.data.datasets[0].data = [fr0, fr1, fr2, rk];
-            kazaChart.update();
+        // ===== İŞ KAZASI TABLOLARI (Accidents YTD & Days Since Last FR2) =====
+        const accDepartments = ['PLANT', 'MOTOR', 'VİTES KUTUSU', 'DÖKÜMHANE', 'BAKIM', 'LOJİSTİK'];
+        const defaultAccidents = {};
+        accDepartments.forEach(d => { defaultAccidents[d] = { F0: 0, F1: 0, F2: 0, lastFR2Date: null }; });
+        let accidentData = JSON.parse(JSON.stringify(defaultAccidents));
+        let accModalContext = null;
+
+        function accDaysSince(dateStr) {
+            if (!dateStr) return 0;
+            const start = new Date(dateStr);
+            const today = new Date();
+            start.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+            return Math.max(0, diff);
         }
 
-        document.querySelectorAll('.loto-fraction').forEach(fractionInput => {
-            fractionInput.addEventListener('input', function() {
-                const text = this.innerText.trim();
-                const parts = text.split('/');
-                const percentCell = this.nextElementSibling;
-                if (parts.length === 2) {
-                    const num = parseFloat(parts[0]);
-                    const den = parseFloat(parts[1]);
-                    if (!isNaN(num) && !isNaN(den) && den !== 0) {
-                        const percentage = Math.round((num / den) * 100);
-                        percentCell.innerText = percentage + '%';
-                    } else {
-                        percentCell.innerText = '-';
-                    }
-                }
+        function renderAccidents() {
+            accDepartments.forEach(d => { if (!accidentData[d]) accidentData[d] = { F0: 0, F1: 0, F2: 0, lastFR2Date: null }; });
+
+            const ytd = document.getElementById('accYtdGrid');
+            const days = document.getElementById('daysFr2Grid');
+            if (!ytd || !days) return;
+            ytd.innerHTML = '';
+            days.innerHTML = '';
+
+            const head = (text, extra) => {
+                const el = document.createElement('div');
+                el.className = 'acc-h' + (extra ? ' ' + extra : '');
+                el.textContent = text;
+                return el;
+            };
+            const deptEl = (name) => {
+                const el = document.createElement('div');
+                el.className = 'acc-dept';
+                el.textContent = name;
+                el.title = name;
+                return el;
+            };
+            const cellEl = (val, state) => {
+                const el = document.createElement('div');
+                el.className = 'acc-cell ' + state;
+                el.textContent = val;
+                return el;
+            };
+
+            ytd.appendChild(head('Departman', 'left'));
+            ytd.appendChild(head('FR0'));
+            ytd.appendChild(head('FR1'));
+            ytd.appendChild(head('FR2'));
+            days.appendChild(head('Departman', 'left'));
+            days.appendChild(head('GÜN'));
+
+            accDepartments.forEach(dept => {
+                const data = accidentData[dept];
+
+                ytd.appendChild(deptEl(dept));
+                ['F0', 'F1', 'F2'].forEach(f => {
+                    const val = data[f] || 0;
+                    const c = cellEl(val, val === 0 ? 'zero' : 'nonzero');
+                    c.addEventListener('click', (e) => { e.stopPropagation(); openAccCountModal(dept, f); });
+                    ytd.appendChild(c);
+                });
+
+                days.appendChild(deptEl(dept));
+                const dCell = cellEl(accDaysSince(data.lastFR2Date), (data.F2 || 0) === 0 ? 'zero' : 'nonzero');
+                dCell.addEventListener('click', (e) => { e.stopPropagation(); openAccDateModal(dept); });
+                days.appendChild(dCell);
             });
+        }
+
+        const accModal = document.getElementById('accModal');
+        const accModalTitle = document.getElementById('accModalTitle');
+        const accModalInput = document.getElementById('accModalInput');
+
+        function openAccCountModal(dept, field) {
+            accModalContext = { kind: 'count', dept, field };
+            accModalTitle.textContent = dept + ' - ' + field + ' kaza sayısı';
+            accModalInput.type = 'number';
+            accModalInput.value = accidentData[dept][field] || 0;
+            accModal.classList.add('show');
+            setTimeout(() => accModalInput.focus(), 50);
+        }
+
+        function openAccDateModal(dept) {
+            accModalContext = { kind: 'date', dept };
+            accModalTitle.textContent = dept + ' - Son FR2 kazası tarihi';
+            accModalInput.type = 'date';
+            accModalInput.value = accidentData[dept].lastFR2Date || new Date().toISOString().split('T')[0];
+            accModal.classList.add('show');
+            setTimeout(() => accModalInput.focus(), 50);
+        }
+
+        function closeAccModal() { accModal.classList.remove('show'); accModalContext = null; }
+
+        function saveAccModal() {
+            if (!accModalContext) return;
+            const val = accModalInput.value;
+            if (accModalContext.kind === 'count') {
+                accidentData[accModalContext.dept][accModalContext.field] = parseInt(val) || 0;
+            } else if (accModalContext.kind === 'date') {
+                accidentData[accModalContext.dept].lastFR2Date = val || null;
+            }
+            database.ref('dashboard/accidents').set(accidentData);
+            renderAccidents();
+            closeAccModal();
+        }
+
+        document.getElementById('accModalSave').addEventListener('click', saveAccModal);
+        document.getElementById('accModalCancel').addEventListener('click', closeAccModal);
+        accModal.addEventListener('click', (e) => { if (e.target === accModal) closeAccModal(); });
+        accModalInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') saveAccModal();
+            if (e.key === 'Escape') closeAccModal();
         });
+        accModalInput.addEventListener('click', () => {
+            if (accModalInput.type === 'date' && typeof accModalInput.showPicker === 'function') {
+                try { accModalInput.showPicker(); } catch (e) {}
+            }
+        });
+
+        renderAccidents();
+        // ===== /İŞ KAZASI TABLOLARI =====
 
         database.ref('dashboard').on('value', (snapshot) => {
             const data = snapshot.val();
@@ -1096,16 +1259,15 @@
                     if(data.styles.textMuted) {
                         root.style.setProperty('--text-muted', data.styles.textMuted);
                         Chart.defaults.color = data.styles.textMuted;
-                        kazaChart.options.scales.y.ticks.color = data.styles.textMuted;
-                        kazaChart.options.scales.x.ticks.color = data.styles.textMuted;
                         ltcrChart.options.scales.y.ticks.color = data.styles.textMuted;
                         ltcrChart.options.scales.x.ticks.color = data.styles.textMuted;
+                        fr1Chart.options.scales.y.ticks.color = data.styles.textMuted;
+                        fr1Chart.options.scales.x.ticks.color = data.styles.textMuted;
                         fr2Chart.options.scales.y.ticks.color = data.styles.textMuted;
                         fr2Chart.options.scales.x.ticks.color = data.styles.textMuted;
                     }
                     if(data.styles.vurguColor) {
                         root.style.setProperty('--vurgu-color', data.styles.vurguColor);
-                        kazaChart.data.datasets[0].backgroundColor[0] = data.styles.vurguColor;
                     }
                     if(data.styles.cardBg) root.style.setProperty('--card-bg', data.styles.cardBg);
                     if(data.styles.borderColor) root.style.setProperty('--border-color', data.styles.borderColor);
@@ -1119,25 +1281,30 @@
                         data.chartData.ltcr.forEach((dsData, i) => { if(ltcrChart.data.datasets[i]) ltcrChart.data.datasets[i].data = dsData; });
                         ltcrChart.update();
                     }
+                    if (data.chartData.fr1) {
+                        data.chartData.fr1.forEach((dsData, i) => { if(fr1Chart.data.datasets[i]) fr1Chart.data.datasets[i].data = dsData; });
+                        fr1Chart.update();
+                    }
                     if (data.chartData.fr2) {
                         data.chartData.fr2.forEach((dsData, i) => { if(fr2Chart.data.datasets[i]) fr2Chart.data.datasets[i].data = dsData; });
                         fr2Chart.update();
                     }
                 }
 
-                updateBarChart();
+                if (data.accidents) {
+                    accidentData = data.accidents;
+                }
+                renderAccidents();
+
                 updateProgressBar('hsYayginlasma', 'hsYayginlasmaBar');
-                updateProgressBar('dwsScore', 'dwsBar');
                 updateVerticalProgressBar('intenseyeScore', 'intenseyeBar');
                 updateDoughnutChart('yasalScore', yasalChart);
             }
         });
 
         document.getElementById('hsYayginlasma').addEventListener('input', () => updateProgressBar('hsYayginlasma', 'hsYayginlasmaBar', 100));
-        document.getElementById('dwsScore').addEventListener('input', () => updateProgressBar('dwsScore', 'dwsBar', 100));
         document.getElementById('intenseyeScore').addEventListener('input', () => updateVerticalProgressBar('intenseyeScore', 'intenseyeBar', 100));
         document.getElementById('yasalScore').addEventListener('input', () => updateDoughnutChart('yasalScore', yasalChart));
-        ['valFR0', 'valFR1', 'valFR2', 'valRK'].forEach(id => document.getElementById(id).addEventListener('input', updateBarChart));
 
         settingsBtn.addEventListener('click', () => { colorTool.style.display = 'block'; });
         closeTool.addEventListener('click', () => { colorTool.style.display = 'none'; });
@@ -1180,12 +1347,12 @@
             const newColor = e.target.value;
             updateCSSVariable('--text-muted', newColor);
             Chart.defaults.color = newColor;
-            kazaChart.options.scales.y.ticks.color = newColor;
-            kazaChart.options.scales.x.ticks.color = newColor;
-            kazaChart.update();
             ltcrChart.options.scales.y.ticks.color = newColor;
             ltcrChart.options.scales.x.ticks.color = newColor;
             ltcrChart.update();
+            fr1Chart.options.scales.y.ticks.color = newColor;
+            fr1Chart.options.scales.x.ticks.color = newColor;
+            fr1Chart.update();
             fr2Chart.options.scales.y.ticks.color = newColor;
             fr2Chart.options.scales.x.ticks.color = newColor;
             fr2Chart.update();
@@ -1196,8 +1363,6 @@
             const newColor = e.target.value;
             updateCSSVariable('--vurgu-color', newColor);
             if (selectedCard) { selectedCard.style.outlineColor = newColor; }
-            kazaChart.data.datasets[0].backgroundColor[0] = newColor;
-            kazaChart.update();
         });
 
         cardBgPicker.addEventListener('input', (e) => {
@@ -1291,13 +1456,15 @@
 
             const chartData = {
                 ltcr: ltcrChart.data.datasets.map(ds => ds.data),
+                fr1: fr1Chart.data.datasets.map(ds => ds.data),
                 fr2: fr2Chart.data.datasets.map(ds => ds.data)
             };
 
             const dashboardData = {
                 content: contentData,
                 styles: styleData,
-                chartData: chartData
+                chartData: chartData,
+                accidents: accidentData
             };
             
             database.ref('dashboard').set(dashboardData);
@@ -1307,5 +1474,12 @@
             selectedCardLabel.innerText = 'Tümü';
             colorTool.style.display = 'none';
         });
+        function formatTodayTR() {
+            const months = ['OCAK', 'ŞUBAT', 'MART', 'NİSAN', 'MAYIS', 'HAZİRAN', 'TEMMUZ', 'AĞUSTOS', 'EYLÜL', 'EKİM', 'KASIM', 'ARALIK'];
+            const d = new Date();
+            return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+        }
+        document.getElementById('headerDate').innerText = formatTodayTR();
+
     </script>
 </body></html>
