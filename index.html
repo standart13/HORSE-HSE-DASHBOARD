@@ -562,8 +562,8 @@
             width: 100%;
             pointer-events: auto;
         }
-        .acc-grid-ytd  { grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr; grid-template-rows: auto repeat(6, minmax(0, 1fr)); }
-        .acc-grid-days { grid-template-columns: 1.7fr 1fr;          grid-template-rows: auto repeat(6, minmax(0, 1fr)); }
+        .acc-grid-ytd  { grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr; grid-template-rows: auto repeat(7, minmax(0, 1fr)); }
+        .acc-grid-days { grid-template-columns: 1.7fr 1fr;          grid-template-rows: auto repeat(7, minmax(0, 1fr)); }
         .acc-h {
             font-size: 9px;
             font-weight: 700;
@@ -1114,7 +1114,7 @@
         }
 
         // ===== İŞ KAZASI TABLOLARI (Accidents YTD & Days Since Last FR2) =====
-        const accDepartments = ['PLANT', 'MOTOR', 'VİTES KUTUSU', 'DÖKÜMHANE', 'BAKIM', 'LOJİSTİK'];
+        const accDepartments = ['PLANT', 'MOTOR', 'VİTES KUTUSU', 'DÖKÜMHANE', 'BAKIM', 'LOJİSTİK', 'KALİTE'];
         const defaultAccidents = {};
         accDepartments.forEach(d => { defaultAccidents[d] = { F0: 0, RK: 0, F1: 0, F2: 0, lastFR2Date: null }; });
         let accidentData = JSON.parse(JSON.stringify(defaultAccidents));
