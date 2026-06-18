@@ -17,7 +17,7 @@
             top: 15px;
             right: 15px;
             z-index: 1001;
-            background: rgba(11, 41, 65, 0.6);
+            background: rgba(11, 41, 65, 0.8);
             color: white;
             border: none;
             width: 32px;
@@ -28,6 +28,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .menu-button:hover {
+            opacity: 1;
         }
         .sidebar {
             position: fixed;
