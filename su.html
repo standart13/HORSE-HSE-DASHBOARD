@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Su Verimliliği Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
+<style>
+  :root{
+    --navy-1:#0b2e63; --navy-2:#0e4d92; --blue:#2f80ed; --green:#27ae60;
+    --orange:#f2994a; --red:#eb5757; --teal:#16c2a3;
+    --ink:#1f2d3d; --muted:#7b8a9a; --line:#e7edf4; --bg:#eef4fa; --card:#fff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html, body{width:100%; height:100vh; overflow:hidden;}
+  body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:row;padding:0;gap:0;}
+  aside{width:150px;flex-shrink:0;height:100vh;background:linear-gradient(180deg,#0a2a5c 0%,#0e4d92 55%,#1273b8 100%);color:#fff;display:flex;flex-direction:column;padding:14px 10px}
+  .logo{display:flex;align-items:center;padding:4px 2px 14px}
+  .logo .brand-img{width:122px;height:auto;display:block;filter:drop-shadow(0.6px 0.6px 0 #fff) drop-shadow(-0.6px -0.6px 0 #fff)}
+  nav{display:flex;flex-direction:column;gap:3px}
+  nav a{display:flex;align-items:center;gap:8px;color:#dbe9ff;text-decoration:none;padding:8px 9px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer}
+  nav a.active{background:rgba(255,255,255,.18);color:#fff;box-shadow:inset 3px 0 0 #56ccf2}
+  nav a.navlink{margin-top:6px;border-top:1px solid rgba(255,255,255,.18);padding-top:11px;border-radius:0 0 8px 8px;color:#bfe3ff;font-weight:700}
+  .side-foot{margin-top:auto;font-size:9.5px;line-height:1.45;opacity:.85;padding:10px 8px;background:rgba(255,255,255,.08);border-radius:9px}
+  .side-foot b{display:block;font-size:10.5px;margin-bottom:2px}
+  main{flex:1;min-width:0;height:100vh;display:flex;flex-direction:column;padding:8px 12px;gap:8px;overflow:hidden}
+
+  header{display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--card);padding:6px 12px;border-radius:10px;box-shadow:0 2px 8px rgba(14,77,146,.06);height:48px}
+  .title{display:flex;align-items:center;gap:8px}
+  .title .drop{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#2f80ed,#0e4d92);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px}
+  .title h1{font-size:16px;color:var(--navy-1);line-height:1.1;letter-spacing:.2px;text-transform:uppercase;font-weight:900}
+  .title p{font-size:8.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;font-weight:600}
+  header .spacer{flex:1}
+  .controls{display:flex;gap:8px;align-items:center}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:6px;padding:3px 10px;font-size:10px;color:var(--ink);display:flex;flex-direction:column;line-height:1.2;min-width:100px}
+  .chip b{font-size:11px;color:var(--navy-1)}
+  .chip .lbl{font-size:7.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .edit-btn{cursor:pointer;justify-content:center;align-items:center;font-size:10px;color:var(--muted);flex-direction:row;min-width:auto;padding:6px 10px;font-weight:600}
+  .edit-btn.on{background:#e8f3ff;color:#2270c9;border-color:#bcd9f7}
+
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;flex-shrink:0;height:75px}
+  .kpi{border-radius:10px;padding:8px 10px;color:#fff;position:relative;overflow:hidden;box-shadow:0 3px 8px rgba(14,77,146,.1);display:flex;flex-direction:column;justify-content:space-between}
+  .kpi::after{content:"";position:absolute;right:-15px;bottom:-15px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.1)}
+  .kpi-top{display:flex;align-items:flex-start;gap:6px}
+  .kpi-ic{font-size:13px;opacity:0.9}
+  .kpi h3{font-size:8.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;opacity:.95;line-height:1.1;flex:1}
+  .kpi .val{font-size:20px;font-weight:800;line-height:1}
+  .kpi .bottom-row{display:flex;align-items:center;justify-content:space-between;font-size:8px}
+  .kpi .delta{opacity:.9;font-weight:600}
+  .kpi .hedef{font-size:7.5px;background:rgba(0,0,0,.15);border-radius:4px;padding:2px 5px;font-weight:700;text-transform:uppercase}
+  .g-blue {background:linear-gradient(135deg,#2f80ed,#155eaf)}
+  .g-green{background:linear-gradient(135deg,#34d399,#0f9d6e)}
+  .g-teal {background:linear-gradient(135deg,#1cb5e0,#000046)}
+  .g-purp {background:linear-gradient(135deg,#9b51e0,#6d4fc2)}
+  .g-org  {background:linear-gradient(135deg,#f2994a,#f2c94c);color:#1f2d3d}
+  .g-org .hedef{background:rgba(0,0,0,.08)}
+  .g-org::after{background:rgba(255,255,255,.3)}
+  .g-navy {background:linear-gradient(135deg,#15315f,#0a1f44)}
+  .kpi.g-navy{flex-direction:row;align-items:center;gap:10px;justify-content:center}
+  .kpi.g-navy .gtext{display:flex;flex-direction:column;align-items:center}
+  .kpi.g-navy h3{text-align:center;margin-bottom:4px}
+  .gauge{width:50px;height:50px;border-radius:50%;flex-shrink:0;position:relative;--p:0deg;background:conic-gradient(#56ccf2 0 var(--p), rgba(255,255,255,.18) var(--p) 360deg)}
+  .gauge::after{content:"";position:absolute;inset:5px;border-radius:50%;background:#0a1f44}
+  .gauge span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;z-index:2}
+
+  .content{flex:1 1 auto; display:flex; flex-direction:column; gap:8px; min-height:0}
+  
+  .content.single{display:flex;flex-direction:column}
+  .content.single .row{display:contents}
+  .content.single .card{flex:1 1 auto;min-height:0}
+
+  .content.dual{display:flex;flex-direction:row;gap:8px}
+  .content.dual .row{display:contents}
+  .content.dual .card{flex:1 1 50%;min-height:0}
+
+  .row{flex:1 1 auto; display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; min-height:0}
+  .card{background:var(--card);border-radius:10px;box-shadow:0 2px 8px rgba(14,77,146,.06);padding:10px 12px;display:flex;flex-direction:column;min-height:0}
+  .card h2{font-size:10px;color:var(--navy-1);text-transform:uppercase;font-weight:800;letter-spacing:.3px;border-bottom:1px solid var(--line);padding-bottom:4px;margin-bottom:6px;flex-shrink:0}
+  .card-top-row{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:4px;margin-bottom:6px;flex-shrink:0}
+  .card-top-row h2{border-bottom:none;padding-bottom:0;margin-bottom:0}
+  .chart-box{position:relative;width:100%;flex:1 1 auto;min-height:0}
+  .chart-box canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
+
+  .donut-wrap{flex:1 1 auto;display:flex;align-items:center;gap:10px;min-height:0; padding-left:18px}
+  .donut-wrap .chart-box{flex:1;height:100%}
+  .donut-legend{flex:1;display:flex;flex-direction:column;gap:6px;justify-content:center}
+  .donut-legend .li{display:flex;align-items:center;gap:6px;font-size:9px;color:var(--ink)}
+  .donut-legend .sw{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+  .donut-legend .li-text{display:flex;flex-direction:column}
+  .donut-legend .li b{font-size:9px;color:var(--navy-1)}
+  .donut-legend .li small{color:var(--muted);font-size:8px;font-weight:600}
+  .m3in{cursor:text;outline:none;border-bottom:1px dashed transparent;padding:0 1px;min-width:14px;display:inline-block}
+  .m3in:hover,.m3in:focus{border-bottom-color:#9bb7d4;background:#eef5ff;border-radius:2px}
+
+  .note{font-size:8px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:4px;background:#f8fafc;padding:4px 8px;border-radius:4px;font-weight:600;flex-shrink:0}
+
+  table{width:100%;height:100%;border-collapse:collapse;font-size:8.5px}
+  th{text-align:left;font-size:8px;letter-spacing:.3px;color:var(--muted);padding:4px;border-bottom:1px solid #cdd6e0;font-weight:700}
+  td{padding:4px;border-bottom:1px solid var(--line);vertical-align:middle;color:var(--ink);font-weight:600}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:8px;font-weight:700;text-align:center;min-width:60px}
+  .badge.toggle{cursor:pointer;user-select:none;transition:filter .1s}
+  .badge.toggle:hover{filter:brightness(.96)}
+  .b-done{background:#eafaf1;color:#1d9a5f;border:1px solid #bdf1d4}
+  .b-prog{background:#fff3e6;color:#d97a18;border:1px solid #fce1c6}
+  .card.tbl{padding:0}
+  .card.tbl .card-header{padding:8px 10px 0;flex-shrink:0}
+  .card.tbl .card-header h2{border-bottom:none;margin-bottom:0}
+  .card.tbl .tbl-wrapper{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+  .card.tbl table{flex:1}
+  .card.tbl th:first-child, .card.tbl td:first-child{padding-left:10px}
+  .card.tbl th:last-child, .card.tbl td:last-child{padding-right:10px}
+  .card.tbl tfoot td{background:var(--navy-1);color:#fff;font-weight:700;border-bottom:none;padding:6px 4px;font-size:9.5px}
+  .card.tbl tfoot td:first-child{padding-left:10px;border-bottom-left-radius:10px}
+  .card.tbl tfoot td:last-child{padding-right:10px;border-bottom-right-radius:10px}
+  .proj-name{font-weight:700;color:var(--navy-1);display:flex;align-items:center;gap:4px}
+  .proj-desc{font-size:7.5px;color:var(--muted);margin-top:1px;font-weight:500;padding-left:16px}
+
+  .reglist{flex:1 1 auto; display:flex;flex-direction:column;justify-content:space-evenly;margin-top:2px;min-height:0}
+  .reg{display:flex;align-items:center;justify-content:space-between;padding:2px 0;border-bottom:1px dashed var(--line);flex:1}
+  .reg:last-child{border-bottom:none}
+  .reg-left{display:flex;align-items:center;gap:6px}
+  .reg-left .ic{font-size:12px;width:16px;text-align:center}
+  .reg-left .nm{font-size:9px;font-weight:600;color:var(--navy-1)}
+
+  .banners{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex-shrink:0;height:65px}
+  .bn{border-radius:10px;padding:8px 10px;box-shadow:0 2px 8px rgba(14,77,146,.06);display:flex;flex-direction:column;justify-content:center;background:#fff;border-bottom:3px solid transparent}
+  .bn h4{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;color:var(--muted);display:flex;align-items:center;gap:4px}
+  .bn-green{border-bottom-color:#27ae60}.bn-blue{border-bottom-color:#2f80ed}.bn-teal{border-bottom-color:#16c2a3}.bn-purp{border-bottom-color:#6d4fc2}
+  .bn-val{font-size:16px;font-weight:800;color:var(--navy-1);line-height:1}
+  .bn-sub{font-size:8px;color:var(--muted);font-weight:600;margin-top:2px}
+  .bn-split{display:flex;justify-content:space-between;align-items:flex-end;margin-top:2px}
+  .bn-split-col{display:flex;flex-direction:column}
+  .bn-split-val{font-size:14px;font-weight:800;color:#27ae60}
+  .bn-split-lbl{font-size:7.5px;color:var(--muted);font-weight:600}
+  .sdg-wrap{display:flex;gap:8px;margin-top:2px}
+  .sdg-box{display:flex;align-items:center;background:#26bde2;color:#fff;border-radius:4px;padding:3px 6px;gap:6px;flex:1}
+  .sdg-box.s12{background:#bf8b2e}
+  .sdg-num{font-size:14px;font-weight:900;line-height:1}
+  .sdg-text{font-size:6.5px;font-weight:700;text-transform:uppercase;line-height:1.1}
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="logo"><img class="brand-img" src="horse.png" alt="HORSE"></div>
+  <nav>
+    <a class="active" onclick="showView('all',this)">🏠 Genel Bakış</a>
+    <a onclick="showView('trend',this)">📉 Tüketim Trendi</a>
+    <a onclick="showView('dagilim',this)">📊 Dağılımlar</a>
+    <a onclick="showView('yol',this)">📈 Yol Haritası</a>
+    <a onclick="showView('aksiyon',this)">🛠️ Aksiyon Planı</a>
+    <a onclick="showView('yonetmelik',this)">📋 Yönetmelik</a>
+    <a href="index.html" class="navlink">🌿 Çevre Dashboard →</a>
+  </nav>
+  <div class="side-foot"><b>Her Damla Değerlidir 💧</b>Bugün verimli kullan, yarınlara temiz bir dünya bırak.</div>
+</aside>
+
+<main>
+
+<header>
+  <div class="title">
+    <div class="drop">💧</div>
+    <div><h1>Su Verimliliği Dashboard</h1><p>Suyumuzu verimli kullanıyor, geleceğimize değer katıyoruz.</p></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="controls">
+    <div class="chip"><span class="lbl">Son Güncelleme</span><b>📅 12.06.2026</b></div>
+    <div class="chip edit-btn" id="saveBtn" title="Buluta kaydet">☁️ Buluta Kaydet</div>
+    <div class="chip edit-btn" id="editBtn">✎ Düzenle</div>
+  </div>
+</header>
+
+<section class="kpis">
+  <div class="kpi g-blue">
+    <div class="kpi-top"><span class="kpi-ic">💧</span><h3>Toplam Su Tüketimi (m³)</h3></div>
+    <div class="val">67.662</div>
+    <div class="bottom-row"><span class="delta">2025 gerçekleşen (HORSE)</span></div>
+  </div>
+  <div class="kpi g-green">
+    <div class="kpi-top"><span class="kpi-ic">🏭</span><h3>Toplam Üretim (Adet)</h3></div>
+    <div class="val">396.476</div>
+    <div class="bottom-row"><span class="delta">2025 Motor + Vites Kutusu</span></div>
+  </div>
+  <div class="kpi g-teal">
+    <div class="kpi-top"><span class="kpi-ic">⚙️</span><h3>Motor Başına Su Tüketimi · Mayıs<br><span style="font-size:7px;text-transform:none">(m³/adet)</span></h3></div>
+    <div class="val">0,09</div>
+    <div class="bottom-row"><span class="delta">Bütçenin altında</span><span class="hedef">Hedef: 0,11</span></div>
+  </div>
+  <div class="kpi g-purp">
+    <div class="kpi-top"><span class="kpi-ic">⚙️</span><h3>Vites Kutusu Başına Su Tüketimi · Mayıs<br><span style="font-size:7px;text-transform:none">(m³/adet)</span></h3></div>
+    <div class="val">0,08</div>
+    <div class="bottom-row"><span class="delta">Bütçenin altında</span><span class="hedef">Hedef: 0,09</span></div>
+  </div>
+  <div class="kpi g-org">
+    <div class="kpi-top"><span class="kpi-ic">💧</span><h3>Cumul Su (m³/TAJ) · Mayıs</h3></div>
+    <div class="val">0,10</div>
+    <div class="bottom-row"><span class="delta">▼ %29 bütçe altı</span><span class="hedef">Bütçe: 0,14</span></div>
+  </div>
+  <div class="kpi g-navy">
+    <div class="gtext"><h3>2030 Hedefine İlerleme</h3><div class="delta">Hedefe Doğru İlerleme</div></div>
+    <div class="gauge" id="gauge"><span id="gaugeVal">%36</span></div>
+  </div>
+</section>
+
+<div class="content">
+  <div class="row">
+    <div class="card" data-card="trend">
+      <div class="card-top-row"><h2>Su Tüketimi Trendi (m³)</h2></div>
+      <div class="chart-box"><canvas id="chTrend"></canvas></div>
+    </div>
+    <div class="card" data-card="yol">
+      <div class="card-top-row"><h2>Su Yoğunluğu Yol Haritası (m³/ürün)</h2></div>
+      <div class="chart-box"><canvas id="chRoad"></canvas></div>
+    </div>
+    <div class="card" data-card="dagilim">
+      <h2>Su Kaynakları Dağılımı (2026)</h2>
+      <div class="donut-wrap">
+        <div class="chart-box"><canvas id="chKaynak"></canvas></div>
+        <div class="donut-legend" id="kaynakLegend"></div>
+      </div>
+      <div class="note">💧 Yağmur suyu hasadı devreye alındığında oranlar otomatik olarak güncellenecektir.</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="card" data-card="yonetmelik">
+      <h2>Yönetmelik ve Sürdürülebilirlik Takibi</h2>
+      <div class="reglist">
+        <div class="reg"><div class="reg-left"><span class="ic">📄</span><span class="nm">Su Verimliliği Yönetmeliği Uyum</span></div><span class="badge toggle b-done">✓ Tamamlandı</span></div>
+        <div class="reg"><div class="reg-left"><span class="ic">👥</span><span class="nm">Su Verimliliği Ekibi</span></div><span class="badge toggle b-done">✓ Tamamlandı</span></div>
+        <div class="reg"><div class="reg-left"><span class="ic">🔍</span><span class="nm">Su Envanteri ve İzleme</span></div><span class="badge toggle b-done">✓ Tamamlandı</span></div>
+        <div class="reg"><div class="reg-left"><span class="ic">⚠️</span><span class="nm">Su Risk Analizi</span></div><span class="badge toggle b-done">✓ Tamamlandı</span></div>
+        <div class="reg"><div class="reg-left"><span class="ic">📘</span><span class="nm">Mavi Belge</span></div><span class="badge toggle b-prog">Devam Ediyor</span></div>
+        <div class="reg"><div class="reg-left"><span class="ic">⚙️</span><span class="nm">ISO 46001 Su Yönetim Sistemi</span></div><span class="badge toggle b-prog">Devam Ediyor</span></div>
+      </div>
+    </div>
+
+    <div class="card tbl" data-card="aksiyon">
+      <div class="card-header"><h2>Su Tasarruf Aksiyon Planı</h2></div>
+      <div class="tbl-wrapper">
+        <table>
+          <thead><tr><th>Proje Adı</th><th style="text-align:center">Durum</th><th class="num">Yıllık Tasarruf (m³)</th></tr></thead>
+          <tbody>
+            <tr><td><div class="proj-name"><span>💧</span> Filtrasyon tesisi su ve tuz kullanımı azaltımı</div><div class="proj-desc">Su ve tuz kullanımı azaltımı (2026)</div></td><td style="text-align:center"><span class="badge toggle b-done">✓ Tamamlandı</span></td><td class="num">1.000</td></tr>
+            <tr><td><div class="proj-name"><span>🌧️</span> Yağmur Hasadı Tankı</div><div class="proj-desc">Yatırım (2027)</div></td><td style="text-align:center"><span class="badge toggle b-prog">Devam Ediyor</span></td><td class="num">1.300</td></tr>
+            <tr><td><div class="proj-name"><span>🔧</span> Yangın kaçaklarının azaltılması</div><div class="proj-desc">OPEX (2027-2030)</div></td><td style="text-align:center"><span class="badge toggle b-prog">Devam Ediyor</span></td><td class="num">767</td></tr>
+            <tr><td><div class="proj-name"><span>♻️</span> Kule 1 & 2 Blöf Geri Kazanım</div><div class="proj-desc">Yatırım (2030)</div></td><td style="text-align:center"><span class="badge toggle b-prog">Devam Ediyor</span></td><td class="num">655</td></tr>
+            <tr><td><div class="proj-name"><span>♨️</span> Kule 2 Isı Pompası Uygulaması</div><div class="proj-desc">Yatırım (2030)</div></td><td style="text-align:center"><span class="badge toggle b-prog">Devam Ediyor</span></td><td class="num">1.900</td></tr>
+          </tbody>
+          <tfoot><tr><td colspan="2">TOPLAM HEDEFLENEN TASARRUF (m³/yıl)</td><td class="num">5.622</td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" data-card="dagilim">
+      <h2>Su Tüketiminin Bölümlere Dağılımı (2026)</h2>
+      <div class="donut-wrap">
+        <div class="chart-box"><canvas id="chBolum"></canvas></div>
+        <div class="donut-legend" id="bolumLegend"></div>
+      </div>
+      <div class="note">💧 Tüketimin büyük kısmı motor üretim hattında gerçekleşiyor.</div>
+    </div>
+  </div>
+</div>
+
+<section class="banners">
+  <div class="bn bn-green">
+    <h4>🌧️ Yağmur Suyu Hasadı Potansiyeli</h4>
+    <div class="bn-split">
+      <div class="bn-split-col"><span class="bn-split-lbl">Toplanacak Su (2027)</span><span class="bn-split-val">1.300 m³</span></div>
+      <div class="bn-split-col" style="text-align:right"><span class="bn-split-lbl">Şebeke Suyundan İkame</span><span class="bn-split-val" style="color:#1f2d3d">%4</span></div>
+    </div>
+  </div>
+  <div class="bn bn-blue">
+    <h4>💧 Su Tasarrufu Karşılığı (2030 Hedefi)</h4>
+    <div class="bn-val">5.622 m³</div>
+    <div class="bn-sub">≈ 28.000 kişinin günlük su ihtiyacına eşdeğer</div>
+  </div>
+  <div class="bn bn-teal">
+    <h4>📈 Üretim Artışına Rağmen Su Azalışı</h4>
+    <div class="bn-split" style="margin-top:0">
+      <div class="bn-split-col"><span class="bn-split-lbl">2025'e göre 2030 hedefinde motor başına su tüketimi</span><span class="bn-split-val">%12,5 azalış</span></div>
+      <div class="bn-split-col" style="text-align:right"><span class="bn-split-lbl">vites kutusu başına</span><span class="bn-split-val">%43 azalış</span></div>
+    </div>
+  </div>
+  <div class="bn bn-purp">
+    <h4>🌍 Sürdürülebilir Kalkınma Hedeflerine Katkı</h4>
+    <div class="sdg-wrap">
+      <div class="sdg-box"><span class="sdg-num">6</span><span class="sdg-text">Temiz Su ve<br>Sanitasyon</span></div>
+      <div class="sdg-box s12"><span class="sdg-num">12</span><span class="sdg-text">Sorumlu Üretim<br>ve Tüketim</span></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+/* ---- Sekme görünümü: tıklanan kartı tek başına büyüt ---- */
+function showView(target, el){
+  document.querySelectorAll('aside nav a').forEach(a=>a.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const content=document.querySelector('.content');
+  if(!content) return;
+  const cards=content.querySelectorAll('.card');
+  
+  content.classList.remove('single', 'dual');
+  if(target==='all'){
+    cards.forEach(c=>c.style.display='');
+  } else if (target==='dagilim') {
+    content.classList.add('dual');
+    cards.forEach(c=>c.style.display=(c.dataset.card===target)?'flex':'none');
+  } else {
+    content.classList.add('single');
+    cards.forEach(c=>c.style.display=(c.dataset.card===target)?'flex':'none');
+  }
+  setTimeout(()=>window.dispatchEvent(new Event('resize')),60);
+}
+
+/* ===================== VERİLER ===================== */
+const DATA = {
+  kaynaklar:{etiketler:["Şebeke Suyu","Kuyu Suyu","Yağmur Suyu Hasadı","Geri Kazanılmış Su"],m3:[67662,0,0,0],renkler:["#2f80ed","#27ae60","#f2c94c","#9b51e0"]},
+  bolumler:{etiketler:["Motor","Vites Kutusu"],m3:[34693,7702],renkler:["#0b2e63","#27ae60"]},
+  yolHaritasi:{yillar:["2025 (Baz Yıl)","2026","2027","2028","2029","2030 (Hedef)"],motor:[0.112,0.107,0.103,0.104,0.104,0.098],vites:[0.088,0.082,0.078,0.075,0.071,0.050]},
+  hedefeIlerleme:36,
+  trend:{reel2025:[5173,4255,5023,5111,4616,5897,7781,6235,7524,6839,5405,3803],reel2026:[3572,3246,2529,3161,3132,null,null,null,null,null,null,null],budget2026:[4225,3643,4171,5612,4652,6592,8210,6215,6843,5405,5039,5132]}
+};
+const charts={};
+const TR0=v=>(+v||0).toLocaleString("tr-TR");
+const sum=a=>a.reduce((x,y)=>x+(+y||0),0);
+const pct=(v,t)=>t?Math.round(v/t*100):0;
+
+Chart.defaults.font.family='"Segoe UI",system-ui,sans-serif';
+Chart.defaults.font.size=8;Chart.defaults.color="#7b8a9a";Chart.defaults.devicePixelRatio=2;
+
+const valueLabels={id:"valueLabels",afterDatasetsDraw(chart){
+  if(chart.config.type==='doughnut')return;
+  const {ctx}=chart;
+  chart.data.datasets.forEach((ds,di)=>{if(ds.skipLabels)return;
+    const meta=chart.getDatasetMeta(di);
+    meta.data.forEach((el,i)=>{const v=ds.data[i];if(v==null)return;
+      ctx.save();ctx.font="700 8px 'Segoe UI',sans-serif";ctx.textAlign="center";ctx.fillStyle=ds.labelColor||"#1f2d3d";
+      const dec=ds.labelDecimals;const txt=dec!=null?v.toLocaleString("tr-TR",{minimumFractionDigits:dec,maximumFractionDigits:dec}):v.toLocaleString("tr-TR");
+      ctx.fillText(txt,el.x,el.y-6);ctx.restore();});});
+}};
+Chart.register(valueLabels);
+
+function destroyChart(id){const c=document.getElementById(id);const ex=c&&Chart.getChart?Chart.getChart(c):null;if(ex)ex.destroy();}
+
+/* DONUT: dilim + ortadaki % doğrudan m³'ten hesaplanır */
+function donut(id,key,centerIdx){
+  destroyChart(id);
+  const d=DATA[key];
+  charts[key]=new Chart(document.getElementById(id),{type:"doughnut",
+    data:{labels:d.etiketler,datasets:[{data:d.m3.slice(),backgroundColor:d.renkler,borderColor:"#fff",borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:"65%",layout:{padding:0},animation:{duration:300},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${TR0(c.parsed)} m³ (%${pct(c.parsed,sum(d.m3))})`}}}},
+    plugins:[{id:"ct"+key,afterDraw(chart){
+      const a=chart.chartArea;if(!a)return;
+      const x=(a.left+a.right)/2,y=(a.top+a.bottom)/2,t=sum(d.m3),ctx=chart.ctx;
+      ctx.save();ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.font="900 18px 'Segoe UI',sans-serif";ctx.fillStyle="#0b2e63";ctx.fillText("%"+pct(d.m3[centerIdx],t),x,y-4);
+      ctx.font="600 8px 'Segoe UI',sans-serif";ctx.fillStyle="#7b8a9a";ctx.fillText(d.etiketler[centerIdx].split(" ")[0],x,y+10);
+      ctx.restore();
+    }}]});
+}
+
+/* LEGEND: m³ düzenlenebilir, % otomatik */
+function legend(boxId,key){
+  const d=DATA[key],t=sum(d.m3);
+  document.getElementById(boxId).innerHTML=d.etiketler.map((l,i)=>
+    `<div class="li"><span class="sw" style="background:${d.renkler[i]}"></span>`+
+    `<div class="li-text"><b>${l} (<span class="pct" data-k="${key}" data-i="${i}">%${pct(d.m3[i],t)}</span>)</b>`+
+    `<small><span class="m3in" contenteditable="true" data-k="${key}" data-i="${i}">${TR0(d.m3[i])}</span> m³</small></div></div>`).join("");
+}
+
+function refreshDonut(key){
+  const d=DATA[key],t=sum(d.m3);
+  if(charts[key]){charts[key].data.datasets[0].data=d.m3.slice();charts[key].update();}
+  document.querySelectorAll('.pct[data-k="'+key+'"]').forEach(s=>{s.textContent="%"+pct(d.m3[+s.dataset.i],t);});
+}
+document.addEventListener("input",e=>{
+  const s=e.target.closest&&e.target.closest(".m3in");if(!s)return;
+  const k=s.dataset.k,i=+s.dataset.i;
+  DATA[k].m3[i]=parseInt((s.textContent||"").replace(/[^\d]/g,""),10)||0;
+  refreshDonut(k);
+});
+
+/* Durum rozetleri: tıkla → Tamamlandı / Devam Ediyor */
+document.addEventListener("click",e=>{
+  const b=e.target.closest&&e.target.closest(".badge.toggle");if(!b)return;
+  if(document.designMode==="on")return;
+  if(b.classList.contains("b-done")){b.classList.remove("b-done");b.classList.add("b-prog");b.textContent="Devam Ediyor";}
+  else{b.classList.remove("b-prog");b.classList.add("b-done");b.textContent="✓ Tamamlandı";}
+});
+
+function initCharts(){
+  donut("chKaynak","kaynaklar",0); legend("kaynakLegend","kaynaklar");
+  donut("chBolum","bolumler",0);   legend("bolumLegend","bolumler");
+
+  destroyChart("chRoad");
+  const dash=lim=>({borderDash:c=>c.p0DataIndex>=lim?[5,4]:undefined});
+  new Chart(document.getElementById("chRoad"),{type:"line",data:{labels:DATA.yolHaritasi.yillar,datasets:[
+     {label:"Motor (m³/motor)",data:DATA.yolHaritasi.motor,borderColor:"#2f80ed",backgroundColor:"#2f80ed",tension:.2,pointRadius:3,pointBackgroundColor:"#2f80ed",borderWidth:2,labelColor:"#2f80ed",labelDecimals:3,segment:dash(1)},
+     {label:"Vites Kutusu (m³/adet)",data:DATA.yolHaritasi.vites,borderColor:"#27ae60",backgroundColor:"#27ae60",tension:.2,pointRadius:3,pointBackgroundColor:"#27ae60",borderWidth:2,labelColor:"#1d9a5f",labelDecimals:3,segment:dash(1)}
+  ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:12,right:10}},
+    plugins:{legend:{display:true,position:"top",align:"center",labels:{boxWidth:10,boxHeight:10,font:{size:9,weight:'bold'},color:'#1f2d3d',padding:10}},
+      tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y.toLocaleString("tr-TR",{minimumFractionDigits:3})}`}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:8}}},y:{beginAtZero:true,suggestedMax:0.16,grid:{color:"#eef2f7"},ticks:{callback:v=>v.toLocaleString("tr-TR",{minimumFractionDigits:3}),font:{size:8}}}}}});
+
+  const g=document.getElementById("gauge");
+  if(g){g.style.setProperty("--p",(DATA.hedefeIlerleme*3.6)+"deg");const gv=document.getElementById("gaugeVal");if(gv)gv.textContent="%"+DATA.hedefeIlerleme;}
+
+  destroyChart("chTrend");
+  const _months=["O","Ş","M","N","M","H","T","A","E","E","K","A"];
+  new Chart(document.getElementById("chTrend"),{type:"line",data:{labels:_months,datasets:[
+     {label:"2025 Gerçekleşen",data:DATA.trend.reel2025,borderColor:"#9bc4f5",backgroundColor:"rgba(155,196,245,.10)",tension:.35,pointRadius:2.5,pointBackgroundColor:"#9bc4f5",borderWidth:2,skipLabels:true},
+     {label:"2026 Gerçekleşen",data:DATA.trend.reel2026,borderColor:"#0e4d92",backgroundColor:"rgba(14,77,146,.12)",fill:true,tension:.35,pointRadius:3,pointBackgroundColor:"#0e4d92",borderWidth:2.5,skipLabels:true},
+     {label:"2026 Bütçe",data:DATA.trend.budget2026,borderColor:"#f2994a",backgroundColor:"#f2994a",borderDash:[4,4],tension:.35,pointRadius:2,borderWidth:1.8,skipLabels:true}
+  ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:8}},
+    plugins:{legend:{display:true,position:"bottom",labels:{boxWidth:9,boxHeight:9,font:{size:8},padding:6}},
+      tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${TR0(c.parsed.y)} m³`}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:8}}},y:{beginAtZero:true,suggestedMax:9000,grid:{color:"#eef2f7"},ticks:{callback:v=>TR0(v),font:{size:8}}}}}});
+}
+
+/* Düzenleme modu */
+function toggleEdit(){const b=document.getElementById("editBtn");const on=document.designMode!=="on";document.designMode=on?"on":"off";b.classList.toggle("on",on);b.textContent=on?"✓ Düzenleme açık":"✎ Düzenle";}
+function bindUI(){const eb=document.getElementById("editBtn");if(eb)eb.onclick=toggleEdit;const sb=document.getElementById("saveBtn");if(sb)sb.onclick=cloudSave;}
+document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.key.toLowerCase()==="e"){e.preventDefault();toggleEdit();}});
+
+/* Firebase (çevre ile aynı proje, ayrı düğüm) */
+const FB_PATH="water_data_v1",FB_VER="v3";
+let db=null;
+try{if(typeof firebase!=="undefined"){
+  firebase.initializeApp({apiKey:"AIzaSyB_bYaGi9WjQoN_TbDc7UZygKDrzMYU0jM",authDomain:"horse-cevre-dashboard.firebaseapp.com",databaseURL:"https://horse-cevre-dashboard-default-rtdb.firebaseio.com",projectId:"horse-cevre-dashboard",storageBucket:"horse-cevre-dashboard.firebasestorage.app",messagingSenderId:"859607408879",appId:"1:859607408879:web:1f8e068725ca63c78ebb1a"});
+  db=firebase.database();
+}}catch(e){console.warn("Firebase init:",e);}
+
+function cloudSave(){
+  if(!db){alert("Firebase yüklenemedi (internetli ortamda dene).");return;}
+  document.designMode="off";
+  const sb=document.getElementById("saveBtn");if(sb)sb.textContent="⏳ Kaydediliyor...";
+  const data={version:FB_VER,mainHTML:document.querySelector("main").innerHTML,m3:{kaynaklar:DATA.kaynaklar.m3,bolumler:DATA.bolumler.m3},ilerleme:DATA.hedefeIlerleme};
+  db.ref(FB_PATH).set(data).then(()=>alert("Su dashboard buluta kaydedildi.")).catch(e=>alert("Kayıt hatası: "+e.message)).finally(()=>{if(sb)sb.textContent="☁️ Buluta Kaydet";});
+}
+
+function start(){
+  if(!db){initCharts();bindUI();return;}
+  db.ref(FB_PATH).once("value",snap=>{
+    const v=snap.exists()?snap.val():null;
+    if(v&&v.version===FB_VER){
+      if(v.m3){if(v.m3.kaynaklar)DATA.kaynaklar.m3=v.m3.kaynaklar;if(v.m3.bolumler)DATA.bolumler.m3=v.m3.bolumler;}
+      if(typeof v.ilerleme==="number")DATA.hedefeIlerleme=v.ilerleme;
+      if(v.mainHTML)document.querySelector("main").innerHTML=v.mainHTML;
+    }
+    initCharts();bindUI();
+  },err=>{console.warn("Firebase load:",err);initCharts();bindUI();});
+}
+window.addEventListener("load",start);
+</script>
+</body>
+</html>
