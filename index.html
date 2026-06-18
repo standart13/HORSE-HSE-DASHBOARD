@@ -12,11 +12,20 @@
             background-color: #f1f5f9; 
             font-family: sans-serif;
         }
-        .menu-button {
+        
+        /* Kontrol elemanları grubu için yeni stil */
+        .controls-wrapper {
             position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1001;
+            top: 15px; /* Logo ile aynı yükseklikte kalmak için */
+            right: 15px; /* Sağ üst köşe */
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Kontroller arası boşluk */
+            z-index: 1002; /* Menü düğmesinin üzerinde kalmalı */
+        }
+        
+        /* Menü düğmesi için güncellenmiş stil */
+        .menu-button {
             background: rgba(11, 41, 65, 0.6);
             color: white;
             border: none;
@@ -28,7 +37,39 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            /* Yeri değiştiği için top ve left'i sildik */
         }
+        
+        /* Tarih barı için stil (görüntüye dayalı) */
+        .date-bar {
+            background: rgba(11, 41, 65, 0.6);
+            color: white;
+            border: none;
+            height: 32px;
+            border-radius: 4px;
+            font-size: 14px;
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Ayarlar simgesi için stil (dişli) */
+        .settings-icon {
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px; /* Menü butonuyla aynı genişlik */
+            height: 32px; /* Menü butonuyla aynı yükseklik */
+            border-radius: 4px;
+        }
+        
         .sidebar {
             position: fixed;
             top: 0;
@@ -83,7 +124,17 @@
     </style>
 </head>
 <body>
-    <button class="menu-button" onclick="toggleMenu()">&#8942;</button>
+    <!-- Kontrol elemanları grubu -->
+    <div class="controls-wrapper">
+        <!-- Menü (Üç Nokta) Butonu - Artık bu grubun içinde -->
+        <button class="menu-button" onclick="toggleMenu()">&#8942;</button>
+        
+        <!-- Ayarlar (Dişli) Simgesi (UTF-8 karakteri) -->
+        <button class="settings-icon">&#9881;</button>
+        
+        <!-- Tarih Barı (Sabit metin) -->
+        <div class="date-bar">18 HAZİRAN 2026</div>
+    </div>
     
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
     
